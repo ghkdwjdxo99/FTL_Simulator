@@ -9,9 +9,9 @@
 static UINT8 G_MEM[1024 * 1024 * 18];
 
 // 메모리 포인터 선언
-BLOCK_META*		const g_Meta = (BLOCK_META*)G_MEM;
-MAP_ADDR*		const g_Map = (MAP_ADDR*)(G_MEM + (sizeof(BLOCK_META) * TOTAL_BLOCK));
-BLOCK_CURSOR*	const g_Cursor = (BLOCK_CURSOR*)(G_MEM + (sizeof(BLOCK_META) * TOTAL_BLOCK) + (sizeof(MAP_ADDR) * TOTAL_SECTORS));
+BLOCK_META*		const g_Meta	= (BLOCK_META*)	  G_MEM;
+MAP_ADDR*		const g_Map		= (MAP_ADDR*)	 (G_MEM + TOTAL_META_SIZE);
+BLOCK_CURSOR*	const g_Cursor	= (BLOCK_CURSOR*)(G_MEM + TOTAL_META_SIZE + TOTAL_MAP_SIZE);
 
 int main(void)
 {
