@@ -14,4 +14,9 @@
 	// blockstate 업데이트
 // cursor 업데이트
 
+void get_page_path_from_lba(UINT32 targetLBA, char* out_path);
+
+
+BOOL write_page(UINT32 startLBA, UINT32 sector_cnt);
+
 BOOL write(UINT32 startLBA, UINT32 sector_cnt);

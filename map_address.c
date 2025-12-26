@@ -15,9 +15,10 @@ void set_pba(MAP_ADDR* map_addr_base, UINT32 target_lba, MAP_ADDR target_pba) {
 }
 
 // PBA 값 가져오기
-void get_pba(MAP_ADDR* map_addr_base, UINT32 target_lba, UINT16* target_pba)
+UINT16 get_pba(MAP_ADDR* map_addr_base, UINT32 target_lba)
 {
-	*target_pba = *(map_addr_base + target_lba);
+	//*target_pba = *(map_addr_base + target_lba);
+	return *(map_addr_base + target_lba);
 }
 
 // .bin 파일로 Save

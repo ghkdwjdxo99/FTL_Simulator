@@ -1,3 +1,14 @@
+# Custom ignored directories
+A/
+B/
+C/
+D/
+Simulator/x64/Debug/
+.vs/
+
+# Binary files
+*.bin
+
 # Prerequisites
 *.d
 

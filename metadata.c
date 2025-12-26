@@ -1,8 +1,11 @@
 #include "metadata.h"
 
 // type, valid count 초기화 함수 : bank 0 block 0 만 meta, 나머지는 free
-void init_BlockState(BLOCK_META* metadata_base)
+BOOL init_BlockState(BLOCK_META* metadata_base)
 {
+	if (metadata_base == NULL)
+		return FALSE;
+
 	for (UINT16 block_idx = 0; block_idx < TOTAL_BLOCK; block_idx++)
 	{
 		// 1) block type 초기화
@@ -18,21 +21,30 @@ void init_BlockState(BLOCK_META* metadata_base)
 		// 3) type, valid count를 BlockState에 대입하기
 		(metadata_base + block_idx)->BlockState = block_type | (valid_cnt & 0x0000FFFF);
 	}
+	return TRUE;
 }
 
 // bitmap 초기화 함수
-void init_validBitmap(BLOCK_META* metadata_base)
+BOOL init_validBitmap(BLOCK_META* metadata_base)
 {
+	if (metadata_base == NULL)
+		return FALSE;
+
 	for (UINT16 block_idx = 0; block_idx < TOTAL_BLOCK; block_idx++)
 	{
 		memset((metadata_base+block_idx)->validBitmap, 0, BITMAP_BYTES_PER_BLOCK);
 	}
+	return TRUE;
 }
 
-void init_metadata(BLOCK_META* metadata_base)
+BOOL init_metadata(BLOCK_META* metadata_base)
 {
+	if (metadata_base == NULL)
+		return FALSE;
+
 	init_BlockState(metadata_base);
 	init_validBitmap(metadata_base);
+	return TRUE;
 }
 
 //---------------------------------------------------------------------
@@ -81,12 +93,16 @@ void update_validBitmap_one(BLOCK_META* target_metadata, UINT8 target_page, UINT
 {
 	UINT32 page_offset = target_page * BITMAP_BYTES_PER_PAGE;
 	UINT8* target_Bitmap = target_metadata->validBitmap + page_offset;
-	for (UINT8 byte_offset = 0; byte_offset < BITMAP_BYTES_PER_PAGE; byte_offset++)
+
+	UINT32 set = 0;
+	for (UINT8 byte_offset = 0; byte_offset < BITMAP_BYTES_PER_PAGE && set < sector_cnt; byte_offset++)
 	{
-		for (UINT8 bit_offset = 0; bit_offset < sector_cnt; bit_offset++)		// write하는 sector 개수만큼 반복
+		UINT8* target_Bitmap_Byte = target_Bitmap + byte_offset;
+		for (UINT8 bit_offset = 0; bit_offset < 8 && set < sector_cnt; bit_offset++)		// write하는 sector 개수만큼 반복
 		{
 			UINT8 mask = 1u << bit_offset;
-			*target_Bitmap = *target_Bitmap | mask;		// 해당 비트를 1로 만들어줌
+			*target_Bitmap_Byte = *target_Bitmap_Byte | mask;		// 해당 비트를 1로 만들어줌
+			set++;
 		}
 	}
 }
@@ -126,7 +142,7 @@ BOOL save_metadata(const char* filename, BLOCK_META const* metadata_base)
 // .bin 파일로 load
 BOOL load_metadata(const char* filename, BLOCK_META* metadata_base)
 {
-	FILE* fp = fopen(filename, "wb");
+	FILE* fp = fopen(filename, "rb");
 	if (!fp)
 		return FALSE;
 

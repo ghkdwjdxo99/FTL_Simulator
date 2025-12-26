@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClCompile Include="cursor.c" />
     <ClCompile Include="file_sys_util.c" />
+    <ClCompile Include="init.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="map_address.c" />
     <ClCompile Include="metadata.c" />
@@ -134,6 +135,7 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="cursor.h" />
     <ClInclude Include="file_sys_util.h" />
+    <ClInclude Include="init.h" />
     <ClInclude Include="map_address.h" />
     <ClInclude Include="metadata.h" />
     <ClInclude Include="write.h" />

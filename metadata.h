@@ -23,9 +23,9 @@
 
 /* =================== function ==========================*/
 // 초기화
-void init_BlockState(BLOCK_META* metadata_base);
-void init_validBitmap(BLOCK_META* metadata_base);
-void init_metadata(BLOCK_META* metadata_base);
+BOOL init_BlockState(BLOCK_META* metadata_base);
+BOOL init_validBitmap(BLOCK_META* metadata_base);
+BOOL init_metadata(BLOCK_META* metadata_base);
 
 // 변경
 void update_BlockState(BLOCK_META* target_metadata);

@@ -8,7 +8,14 @@ BOOL make_dir(const char* path)
 
 BOOL make_bin_file(const char* path)
 {
-	FILE* fp = fopen(path, "w+b");	// 읽기쓰기용으로 파일 생성 동일 파일 있으면 덮어씀
+	FILE* fp = fopen(path, "rb");	// 파일 존재 여부 확인
+	if (fp != NULL)
+	{
+		fclose(fp);
+		return TRUE;
+	}
+
+	fp = fopen(path, "w+b");	// 파일이 없을 때만 읽기쓰기용으로 새로 생성
 	if (fp == NULL)
 	{
 		printf("fopen failed : %s\n", path);
@@ -20,7 +27,7 @@ BOOL make_bin_file(const char* path)
 }
 
 // data_buf에 있는 data(8바이트 data 뭉치)를 path에 있는 file에 write
-BOOL write_file(const char* path, const void* data_buf, UINT32 size)
+BOOL write_file(const char* path, const void* data_buf, UINT32 sector_cnt)
 {
 	FILE* fp = fopen(path, "w+b");
 	if (fp == NULL)
@@ -37,7 +44,7 @@ BOOL write_file(const char* path, const void* data_buf, UINT32 size)
 		return FALSE;
 	}
 
-	if (fwrite(data_buf, DATA_WRITE_SIZE, size, fp) != 1)		// 	fwrite(data_buf, size * DATA_WRITE_SIZE, 1, fp) 같은 의미
+	if (fwrite(data_buf, DATA_WRITE_SIZE, sector_cnt, fp) != sector_cnt)		// 	fwrite(data_buf, size * DATA_WRITE_SIZE, 1, fp) 같은 의미
 	{
 		printf("fwrite failed : %s \n", path);
 	}
@@ -73,23 +80,25 @@ BOOL read_file(const char* path, void* buf)
 	return TRUE;
 }
 
+
 // 8 Byte 데이터 만들어서 data_buf에 저장
-BOOL put_sector_data(UINT8* data_buf, UINT32 lba, UINT32 timestamp)
+BOOL put_sector_data(UINT8* buf, UINT32 lba, UINT32 timestamp)
 {
-	UINT64 data = ((UINT64)lba << 32) | (timestamp & 0x0000FFFF);
-	memcpy(data_buf, &data, 8);
+	UINT64 data = ((UINT64)lba << 32) | ((UINT64)timestamp);
+	memcpy(buf, &data, 8);
 
 	return TRUE;
 }
 
 // 8 Byte 데이터를 size만큼 만들어서 page_buf에 저장
-BOOL put_page_data(UINT8* page_buf, UINT32 start_lba, UINT32 sector_cnt, UINT32 timestamp)
+BOOL put_total_data(UINT8* data_buf, UINT32 start_lba, UINT32 sector_cnt, UINT32 timestamp)
 {
-	for (UINT8 i = 0; i < sector_cnt; i++)
+	for (UINT8 s = 0; s < sector_cnt; s++)
 	{
-		UINT32 offset = DATA_WRITE_SIZE * i;
-		UINT32 lba = start_lba + i;
-		put_sector_data(page_buf + offset, lba, timestamp);
+		UINT32 offset = DATA_WRITE_SIZE * s;
+		UINT32 lba = start_lba + s;
+
+		put_sector_data(data_buf + offset, lba, timestamp);
 	}
 	return TRUE;
 }

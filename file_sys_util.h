@@ -17,19 +17,12 @@ BOOL write_file(const char* path, const void* data_buf, UINT32 size);
 // read
 BOOL read_file(const char* path, void* buf);
 
+
 /* ======== Application Function ======== */
 /* write */
 // 8 Byte 짜리 데이터 만들기
 BOOL put_sector_data(UINT8* data_buf, UINT32 lba, UINT32 timestamp);
 
 // 8 Byte 데이터 붙여서 Page buf 만들기
-BOOL put_page_data(UINT8* data_buf, UINT32 start_lba, UINT32 size, UINT32 timestamp);
+BOOL put_total_data(UINT8* data_buf, UINT32 start_lba, UINT32 size, UINT32 timestamp);
 
-
-/* ==================== 이건 FTL안에서 하는 거인듯..? ===================*/
-// -> readwrite.c로 옮겼음
-// start LBA, size, timestamp 받아서 write
-BOOL write_page(UINT32 start_lba, UINT32 size, UINT32 timestamp);
-
-/* read */
-BOOL read_page(UINT32 start_lba, UINT32 size, UINT32 timestamp);
