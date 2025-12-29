@@ -163,7 +163,7 @@ void update_validBitmap(BLOCK_META* metadata_base, UINT32 target_LBA, UINT16 tar
 // .bin ÆÄÀÏ·Î save
 BOOL save_metadata(const char* filename, BLOCK_META const* metadata_base)
 {
-	FILE* fp = fopen(filename, "wb");
+	FILE* fp = fopen(filename, "wb"); 
 	if (!fp)
 		return FALSE;
 

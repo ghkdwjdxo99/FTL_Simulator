@@ -17,6 +17,9 @@ BOOL make_dir(const char* path);
 // make .bin file
 BOOL make_bin_file(const char* path);
 
+// reset .bin file
+BOOL reset_bin_file(const char* path);
+
 // write
 BOOL write_file(const char* path, const void* data_buf, UINT32 size);
 

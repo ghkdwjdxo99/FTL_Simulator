@@ -28,7 +28,7 @@ UINT8 select_menu(UINT8 cmd)					/* 2. 메뉴 선택 */
 	printf("| 8) flush (metadata store)				|\n");
 	printf("| 0) EXIT						|\n");
 	printf("---------------------------------------------------------\n");
-	printf("\n> Select menu number : "), scanf("%u", &cmd);
+ 	printf("\n> Select menu number : "), scanf("%u", &cmd);
 	return cmd;
 }
 
@@ -40,10 +40,6 @@ int main(void)
 	printf("Total G_MEM size : %llu bytes\n", TOTAL_META_SIZE+ TOTAL_MAP_SIZE +TOTAL_CURSOR_SIZE);
 		
 	load_bin_files(g_Meta, g_Map, g_Cursor);
-	init_metadata(g_Meta);
-	init_map_addr_zero(g_Map);
-	init_cursor(g_Cursor);
-
 	create_nand_dirs();
 
 	UINT8 cmd = 0;
@@ -54,6 +50,8 @@ int main(void)
 		{
 			if (reset_bin_files(g_Meta, g_Map, g_Cursor))
 			{
+				save_bin_files(g_Meta, g_Map, g_Cursor);
+				reset_nand_dirs();
 				printf("RESET SUCCESS (metadata.bin , map.bin, cursor.bin)\n");
 			}
 		}
