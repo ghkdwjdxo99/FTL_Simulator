@@ -4,6 +4,7 @@
 #include "cursor.h"
 #include "file_sys_util.h"
 #include "write.h"
+#include "read.h"
 
 // 메모리 정의
 static UINT8 G_MEM[1024 * 1024 * 18];
@@ -40,9 +41,7 @@ int main(void)
 	UINT32 startLBA = 0;
 	UINT32 sector_cnt = 100;
 
-	write(startLBA, sector_cnt);
-
-
+	//write(startLBA, sector_cnt);
 
 
 

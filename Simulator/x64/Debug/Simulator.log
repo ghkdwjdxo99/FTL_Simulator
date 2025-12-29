@@ -1,12 +1,17 @@
 ﻿  cursor.c
   file_sys_util.c
   main.c
-C:\Users\JAB\OneDrive - Novachips\과제\Simulator\main.c(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\hjt\Desktop\workspace_study\FTL_Simulator\main.c(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
   map_address.c
   metadata.c
+  read.c
+C:\Users\hjt\Desktop\workspace_study\FTL_Simulator\file_sys_util.h(41,6): warning C4028: 정식 매개 변수 3이(가) 선언과 다릅니다.
+  (소스 파일 'read.c'을(를) 컴파일하는 중)
+  
+C:\Users\hjt\Desktop\workspace_study\FTL_Simulator\read.c(20,59): warning C4028: 정식 매개 변수 3이(가) 선언과 다릅니다.
   write.c
-C:\Users\JAB\OneDrive - Novachips\과제\Simulator\write.c(76,21): warning C4244: '초기화 중': 'ULONGLONG'에서 'UINT32'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\hjt\Desktop\workspace_study\FTL_Simulator\write.c(76,21): warning C4244: '초기화 중': 'ULONGLONG'에서 'UINT32'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   코드를 생성하고 있습니다...
-C:\Users\JAB\OneDrive - Novachips\과제\Simulator\write.c(19,1): warning C4716: 'write_page': 값을 반환해야 합니다.
-C:\Users\JAB\OneDrive - Novachips\과제\Simulator\file_sys_util.c(7,1): warning C4715: 'make_dir': 모든 제어 경로에서 값을 반환하지는 않습니다.
-  Simulator.vcxproj -> C:\Users\JAB\OneDrive - Novachips\과제\Simulator\x64\Debug\Simulator.exe
+C:\Users\hjt\Desktop\workspace_study\FTL_Simulator\write.c(19,1): warning C4716: 'write_page': 값을 반환해야 합니다.
+C:\Users\hjt\Desktop\workspace_study\FTL_Simulator\file_sys_util.c(54,1): warning C4715: 'make_dir': 모든 제어 경로에서 값을 반환하지는 않습니다.
+  Simulator.vcxproj -> C:\Users\hjt\Desktop\workspace_study\FTL_Simulator\x64\Debug\Simulator.exe

@@ -3,6 +3,13 @@
 #include <Windows.h>
 #include <stdio.h>
 
+#define DEBUG
+
+
+
+
+
+
 #define BANK_NUM		4
 #define BLOCK_NUM		128
 #define PAGE_NUM		128
