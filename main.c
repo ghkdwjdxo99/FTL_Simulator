@@ -40,6 +40,9 @@ int main(void)
 	printf("Total G_MEM size : %llu bytes\n", TOTAL_META_SIZE+ TOTAL_MAP_SIZE +TOTAL_CURSOR_SIZE);
 		
 	load_bin_files(g_Meta, g_Map, g_Cursor);
+	init_metadata(g_Meta);
+	init_map_addr_zero(g_Map);
+	init_cursor(g_Cursor);
 
 	create_nand_dirs();
 
