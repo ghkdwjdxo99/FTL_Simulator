@@ -1,8 +1,7 @@
 #pragma once
 #include "config.h"
 
-#define MAX_SECTOR_PER_PAGE		(PAGE_SIZE / SECTOR_SIZE)
-//#define MAX_SECTOR_PER_PAGE		16
+
 // seq : start lba, sector size 입력받기
 // random : start lba, sector size를 랜덤으로
 
@@ -17,20 +16,17 @@
 // cursor 업데이트
 
 
-// 8 Byte 짜리 데이터 1개 만들기
-BOOL put_sector_data(UINT8* data_buf, UINT32 lba, UINT32 timestamp);
+// 8 Byte 데이터 1개 만들어서 buf에 저장
+BOOL put_sector_data(UINT8* buf, UINT32 lba, UINT32 timestamp);
 
-// 8 Byte 데이터 붙여서 Page buf 만들기
-BOOL put_total_data(UINT8* data_buf, UINT32 start_lba, UINT32 size, UINT32 timestamp);
+// 8 Byte 데이터를 sector_cnt개 만큼 만들어서 data_buf에 저장
+BOOL put_total_data(UINT8* data_buf, UINT32 start_lba, UINT32 sector_cnt, UINT32 timestamp);
 
-// lba를 넣어주면 그에 해당하는 pba에 해당하는 파일 경로 구하는 함수
+// lba를 넣어주면 그에 해당하는 pba에 해당하는 "page.bin 파일의 path" 구하는 함수
 void get_page_path_from_lba(UINT32 targetLBA, char* out_path);
 
-// page 하나를 write하는 함수
+// page 하나에 해당하는 sector data를 만들고 page.bin 파일에 write하는 함수
 BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page);		
-
-// sector_cnt에 따른 write해야하는 page 개수를 구해서 write하는 process
-BOOL process_write_pages(UINT32 startLBA, UINT32 sector_cnt);		
 
 UINT16 find_enable_pba(MAP_ADDR* map_addr_base, UINT32 target_lba);
 

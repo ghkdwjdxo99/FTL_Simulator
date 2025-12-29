@@ -15,7 +15,7 @@ BOOL set_cursor_next_page(BLOCK_CURSOR* cur_cursor) {
 	if (cur_cursor == NULL)
 		return FALSE;
 
-	if (*cur_cursor == SECTORS_PER_PAGE - 1)
+	if (*cur_cursor == MAX_SECTORS_PER_PAGE - 1)
 		*cur_cursor = PAGE_FULL;
 	else
 		*cur_cursor += 1;

@@ -27,9 +27,6 @@ BOOL set_cursor_next_page(BLOCK_CURSOR* cur_cursor);
 // 현재 Cursor 위치 반환 (Page Index 반환)
 BLOCK_CURSOR get_block_write_page_idx(BLOCK_CURSOR* cur_cursor);
 
-// cursor 업데이트
-
-
 // .bin 파일로 save
 BOOL save_cursor(const char* path, const BLOCK_CURSOR* cursor_base);
 

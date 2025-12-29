@@ -37,6 +37,14 @@ UINT8 get_block(MAP_ADDR* map_addr_base, UINT32 target_lba)
 	//page = (PBA) & 0x7F;
 }
 
+UINT8 get_block_offset(MAP_ADDR* map_addr_base, UINT32 target_lba)
+{
+	UINT8 bank = get_bank(map_addr_base, target_lba);
+	UINT8 block = get_block(map_addr_base, target_lba);
+
+	return (bank * BANK_NUM + block);
+}
+
 UINT8 get_page(MAP_ADDR* map_addr_base, UINT32 target_lba)
 {
 	UINT16 pba = *(map_addr_base + target_lba);

@@ -23,6 +23,8 @@ UINT16 get_pba(MAP_ADDR* map_addr_base, UINT32 target_lba);
 UINT8 get_bank(MAP_ADDR* map_addr_base, UINT32 target_lba);
 UINT8 get_block(MAP_ADDR* map_addr_base, UINT32 target_lba);
 UINT8 get_page(MAP_ADDR* map_addr_base, UINT32 target_lba);
+UINT8 get_block_offset(MAP_ADDR* map_addr_base, UINT32 target_lba);
+
 
 
 // .bin ÆÄÀÏ·Î Save

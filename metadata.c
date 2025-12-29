@@ -50,40 +50,53 @@ BOOL init_metadata(BLOCK_META* metadata_base)
 
 //---------------------------------------------------------------------
 // block 기준 bitmap에 들어있는 1비트 개수 세기
-UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata)
+UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata, UINT8* free_page_cnt)
 {
 	//UINT8* target_Bitmap = target_metadata->validBitmap;
 	UINT16 valid_cnt = 0;
-
-	for (UINT16 byte_offset = 0; byte_offset < BITMAP_BYTES_PER_BLOCK; byte_offset++)
+	for (UINT8 page = 0; page < PAGE_NUM; page++)
 	{
-		UINT8* target_Bitmap = target_metadata->validBitmap + byte_offset;		// 비트맵을 Byte단위로 이동
-		for (UINT8 bit_offset = 0; bit_offset < 8; bit_offset++)
+		for (UINT16 byte_offset = 0; byte_offset < BITMAP_BYTES_PER_PAGE; byte_offset++)
 		{
-			UINT8 mask = (UINT8)(1u << bit_offset);
-			if (*target_Bitmap & mask)		// Byte단위 비트맵을 마스크를 이용해서 비트단위로 1이 있는지 확인
-				valid_cnt++;
+			UINT8* target_Bitmap = target_metadata->validBitmap + (byte_offset * page);		// 비트맵을 Byte단위로 이동
+			BOOL is_page_free = TRUE;
+			for (UINT8 bit_offset = 0; bit_offset < 8; bit_offset++)
+			{
+				UINT8 mask = (UINT8)(1u << bit_offset);
+				if (*target_Bitmap & mask)		// Byte단위 비트맵을 마스크를 이용해서 비트단위로 1이 있는지 확인
+				{
+					valid_cnt++;
+					is_page_free = FALSE;
+				}
+			}
+			if (is_page_free == FALSE)
+			{
+				*free_page_cnt--;
+			}
 		}
 	}
+
 	return valid_cnt;
 }
 
 // type, valid count 변경 함수
 void update_BlockState(BLOCK_META* target_metadata)
 {
-	UINT16 valid_cnt = count_valid_from_bitmap(target_metadata);		// bitmap에서 세어주기
 	UINT32 block_type = 0;
+	UINT8 free_page_cnt = PAGE_NUM;
+	UINT16 valid_cnt = count_valid_from_bitmap(target_metadata, &free_page_cnt);		// bitmap에서 세어주기
+	
 
 	// (1) free로 변경 : 현재 block에 valid한 데이터가 없을 경우
-	if (valid_cnt == 0)
+	if (free_page_cnt == PAGE_NUM)
 		block_type = BT_FREE_DATA;
 
 	// (2) host로 변경 (기존에 free였을 때) : page의 일부가 써졌을 때
-	else if (valid_cnt != MAX_VALID_PER_BLOCK)
+	else if (free_page_cnt > 0)
 		block_type = BT_HOST_DATA;
 
 	// (3) real host로 변경 : 모든 page가 다 써졌을 때
-	else if (valid_cnt == MAX_VALID_PER_BLOCK)
+	else if (free_page_cnt == 0)
 		block_type = BT_REALHOST_DATA;
 
 	target_metadata->BlockState = (block_type & 0xF0000000) | (valid_cnt & 0x0000FFFF);
@@ -135,8 +148,8 @@ void update_validBitmap(BLOCK_META* metadata_base, UINT32 target_LBA, UINT16 tar
 {
 	UINT8 page = target_PBA % 0x7F;
 
-	UINT32 sector_in_page = target_LBA % SECTORS_PER_PAGE;				// target sector가 한 페이지 기준 어느 위치에 있는지 ( 0 ~ 127)
-	UINT32 sector_in_block = page * SECTORS_PER_PAGE + sector_in_page;	// target sector가 한 block기준 어느 위치에 있는지
+	UINT32 sector_in_page = target_LBA % MAX_SECTORS_PER_PAGE;				// target sector가 한 페이지 기준 어느 위치에 있는지 ( 0 ~ 127)
+	UINT32 sector_in_block = page * MAX_SECTORS_PER_PAGE + sector_in_page;	// target sector가 한 block기준 어느 위치에 있는지
 
 	UINT32 byte_offset = sector_in_block / 8;	// 그 위치가 byte기준으로 몇번째 byte인지
 	UINT32 bit_offset = sector_in_block % 8;	// 그 byte위치 기준으로 몇번재 비트에 위치한지

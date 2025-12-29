@@ -32,7 +32,7 @@ void update_BlockState(BLOCK_META* target_metadata);
 //void update_validBitmap_one(BLOCK_META* target_metadata, UINT8 target_page, UINT32 sector_cnt);
 void update_validBitmap_one(BLOCK_META* target_metadata, UINT32 target_LBA, UINT32 sectors_in_page);
 void update_validBitmap(BLOCK_META* metadata_base, UINT32 target_LBA, UINT16 target_PBA);
-UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata);
+UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata, UINT8* free_page_cnt);
 
 
 // 저장 및 불러오기

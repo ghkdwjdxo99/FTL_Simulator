@@ -14,7 +14,7 @@ BOOL put_sector_data(UINT8* buf, UINT32 lba, UINT32 timestamp)
 	return TRUE;
 }
 
-// 8 Byte µ¥ÀÌÅÍ¸¦ size¸¸Å­ ¸¸µé¾î¼­ page_buf¿¡ ÀúÀå
+// 8 Byte µ¥ÀÌÅÍ¸¦ size¸¸Å­ ¸¸µé¾î¼­ data_buf¿¡ ÀúÀå
 BOOL put_total_data(UINT8* data_buf, UINT32 start_lba, UINT32 sector_cnt, UINT32 timestamp)
 {
 	for (UINT8 s = 0; s < sector_cnt; s++)
@@ -53,69 +53,75 @@ BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page)		// firstLBA : Ç
 	write_file(page_path, data_buf, sectors_in_page);	// ÇØ´ç path¿¡ data_buf¿¡ ÀÖ´Â µ¥ÀÌÅÍ¸¦ ¾²±â
 }
 
-// sector_cnt¿¡ µû¸¥ page °³¼ö¸¸Å­ write 
-BOOL process_write_pages(UINT32 startLBA, UINT32 sector_cnt)
-{
-	UINT8 page_cnt = (sector_cnt + MAX_SECTOR_PER_PAGE - 1) / MAX_SECTOR_PER_PAGE;		// ½á¾ßÇÏ´Â page °³¼ö
-
-	for (UINT8 page_offset = 0; page_offset < page_cnt; page_offset++)
-	{
-		UINT32 firstLBA_in_page = startLBA + MAX_SECTOR_PER_PAGE * page_offset;			// ÇÑ page ±âÁØ Ã¹¹øÂ° lba
-		UINT32 sectors_in_page = (sector_cnt > MAX_SECTOR_PER_PAGE ? MAX_SECTOR_PER_PAGE : sector_cnt);		// ÇÑ page ±âÁØ writeÇÏ´Â sector °³¼ö
-
-		if (firstLBA_in_page > sector_cnt)
-		{
-			firstLBA_in_page = sector_cnt - 1;
-		}
-
-		write_single_page(firstLBA_in_page, sectors_in_page);
-	}
-#if 0
-	// (1) sector_cnt¸¦ 128º¸´Ù Å©°Ô writeÇÒ ¶§ (page °³¼ö°¡ 1º¸´Ù Å¬¶§)
-	if (page_cnt > 1)
-	{
-		for (UINT8 page_offset = 0; page_offset < page_cnt; page_offset++)
-		{
-			UINT32 firstLBA_of_page = startLBA + MAX_SECTOR_PER_PAGE * page_offset;
-			if (firstLBA_of_page > sector_cnt)
-				firstLBA_of_page = sector_cnt;
-
-
-			UINT8 data_buf[PAGE_SIZE] = { 0 };
-			UINT32 timestamp = GetTickCount64();
-			put_total_data(data_buf, firstLBA_of_page, sector_cnt, timestamp);		// sector_cnt¸¸Å­ÀÇ writeÇÒ 8¹ÙÀÌÆ® µ¥ÀÌÅÍ¸¦ buf¿¡ ¸¸µé±â
-
-			char page_path[16];
-			get_page_path_from_lba(firstLBA_of_page, &page_path);		// ÇöÀç LBA¿¡ ÇØ´çÇÏ´Â pageÀÇ path °¡Á®¿À±â
-
-			write_file(page_path, data_buf, sector_cnt);	// ÇØ´ç path¿¡ data_buf¿¡ ÀÖ´Â µ¥ÀÌÅÍ¸¦ ¾²±â
-		}
-
-	}
-
-	// (2) sector_cnt¸¦ 128±îÁö writeÇÒ ¶§ (page °³¼ö°¡ 1°³ ÀÏ¶§)
-	else if (page_cnt == 1)
-	{
-		write_single_page(startLBA, sector_cnt);
-	}
-#endif
-}
+//// sector_cnt¿¡ µû¸¥ page °³¼ö¸¸Å­ write 
+//BOOL process_write_pages(UINT32 startLBA, UINT32 sector_cnt)
+//{
+//	UINT8 page_cnt = (sector_cnt + MAX_SECTOR_PER_PAGE - 1) / MAX_SECTOR_PER_PAGE;		// ½á¾ßÇÏ´Â page °³¼ö
+//
+//	for (UINT8 page_offset = 0; page_offset < page_cnt; page_offset++)
+//	{
+//		UINT32 firstLBA_in_page = startLBA + MAX_SECTOR_PER_PAGE * page_offset;			// ÇÑ page ±âÁØ Ã¹¹øÂ° lba
+//		UINT32 sectors_in_page = (sector_cnt > MAX_SECTOR_PER_PAGE ? MAX_SECTOR_PER_PAGE : sector_cnt);		// ÇÑ page ±âÁØ writeÇÏ´Â sector °³¼ö
+//
+//		if (firstLBA_in_page > sector_cnt)
+//		{
+//			firstLBA_in_page = sector_cnt - 1;
+//		}
+//
+//		write_single_page(firstLBA_in_page, sectors_in_page);
+//	}
+//#if 0
+//	// (1) sector_cnt¸¦ 128º¸´Ù Å©°Ô writeÇÒ ¶§ (page °³¼ö°¡ 1º¸´Ù Å¬¶§)
+//	if (page_cnt > 1)
+//	{
+//		for (UINT8 page_offset = 0; page_offset < page_cnt; page_offset++)
+//		{
+//			UINT32 firstLBA_of_page = startLBA + MAX_SECTOR_PER_PAGE * page_offset;
+//			if (firstLBA_of_page > sector_cnt)
+//				firstLBA_of_page = sector_cnt;
+//
+//
+//			UINT8 data_buf[PAGE_SIZE] = { 0 };
+//			UINT32 timestamp = GetTickCount64();
+//			put_total_data(data_buf, firstLBA_of_page, sector_cnt, timestamp);		// sector_cnt¸¸Å­ÀÇ writeÇÒ 8¹ÙÀÌÆ® µ¥ÀÌÅÍ¸¦ buf¿¡ ¸¸µé±â
+//
+//			char page_path[16];
+//			get_page_path_from_lba(firstLBA_of_page, &page_path);		// ÇöÀç LBA¿¡ ÇØ´çÇÏ´Â pageÀÇ path °¡Á®¿À±â
+//
+//			write_file(page_path, data_buf, sector_cnt);	// ÇØ´ç path¿¡ data_buf¿¡ ÀÖ´Â µ¥ÀÌÅÍ¸¦ ¾²±â
+//		}
+//
+//	}
+//
+//	// (2) sector_cnt¸¦ 128±îÁö writeÇÒ ¶§ (page °³¼ö°¡ 1°³ ÀÏ¶§)
+//	else if (page_cnt == 1)
+//	{
+//		write_single_page(startLBA, sector_cnt);
+//	}
+//#endif
+//}
 
 // sector´ÜÀ§·Î writeÇÒ ¼ö ÀÖ´Â pba¸¦ Ã£´Â ÇÔ¼ö
 UINT16 find_enable_pba(MAP_ADDR* map_addr_base, UINT32 target_lba)
 {
-	/* ========== (0) LBA¿Í ¸ÅÄªµÇ´Â pba Ã£±â ========== */
-	UINT16 origin_pba = get_pba(map_addr_base, target_lba);
+	///* ========== (0) LBA¿Í ¸ÅÄªµÇ´Â pba Ã£±â ========== */
+	//UINT16 origin_pba = get_pba(map_addr_base, target_lba);
 
 	/* ========== (1) PBA¸¦ bank, block, page·Î ºÐ¸® ========== */
-	UINT8 bank = (origin_pba >> 14) & 0x03;
-	UINT8 block = (origin_pba >> 7) & 0x7F;
-	UINT8 page = (origin_pba) & 0x7F;
+	UINT8 bank = get_bank(map_addr_base, target_lba);
+	UINT8 block = get_block(map_addr_base, target_lba);
+	UINT8 page = get_page(map_addr_base, target_lba);
+
+	//UINT8 bank = (origin_pba >> 14) & 0x03;
+	//UINT8 block = (origin_pba >> 7) & 0x7F;
+	//UINT8 page = (origin_pba) & 0x7F;
 
 	/* ========== (2) write ÇÒ ¼ö ÀÖ´Â page Ã£±â ========== */
 	while (1)
 	{
-		UINT32 block_offset = bank * BLOCK_NUM + block;
+		//UINT32 block_offset = bank * BLOCK_NUM + block;
+		UINT32 block_offset = get_block_offset(map_addr_base, target_lba);
+
 		BLOCK_CURSOR* target_cursor = g_Cursor + block_offset;				// g_Cursor¿¡¼­ ÇöÀç cursor¸¦ ±¸ÇÒ À§Ä¡
 		UINT8 cur_page = get_block_write_page_idx(target_cursor);	// ±× À§Ä¡¿¡ ÀúÀåµÇ¾îÀÖ´Â cursor °ª = writeÇÒ ¼ö ÀÖ´Â page
 
@@ -151,7 +157,7 @@ UINT16 find_enable_pba(MAP_ADDR* map_addr_base, UINT32 target_lba)
 
 BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 {
-	UINT8 page_cnt = (sector_cnt + MAX_SECTOR_PER_PAGE - 1) / MAX_SECTOR_PER_PAGE;		// ½á¾ßÇÏ´Â page °³¼ö
+	//UINT8 page_cnt = (sector_cnt + MAX_SECTOR_PER_PAGE - 1) / MAX_SECTOR_PER_PAGE;		// ½á¾ßÇÏ´Â page °³¼ö
 	UINT32 set_page = 0;						// ÇöÀç write ¿Ï·áÇÑ page °³¼ö
 	for (UINT32 sector_offset = 0; sector_offset < sector_cnt; sector_offset++)
 	{
@@ -163,66 +169,39 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 		/* ========== (1) map ¾÷µ¥ÀÌÆ® ========== */
 		set_pba(g_Map, targetLBA, new_PBA);
 
-		UINT8 bank	= get_bank(g_Map, targetLBA);
-		UINT8 block = get_block(g_Map, targetLBA);
-		UINT8 page	= get_page(g_Map, targetLBA);
-		UINT32 block_offset = bank * BLOCK_NUM + block;
+		//UINT8 bank	= get_bank(g_Map, targetLBA);
+		//UINT8 block = get_block(g_Map, targetLBA);
+		//UINT8 page	= get_page(g_Map, targetLBA);
 
-		// "ÇÑ ÆäÀÌÁö ´ÜÀ§" = sector_offsetÀÌ ¸¶Áö¸· sector(sector_cnt-1)ÀÏ ¶§ ¶Ç´Â 128¹è¼öÀÏ ¶§  -> cursor ¹× metadata ¾÷µ¥ÀÌÆ®
-		//if ((sector_offset == sector_cnt - 1) || (sector_offset % (MAX_SECTOR_PER_PAGE - 1) == 0))
-		if ( (sector_offset == sector_cnt - 1) ||		// ÇÑ ÆäÀÌÁö¸¸ write
-			( ((sector_offset + 1) % MAX_SECTOR_PER_PAGE == 0) && sector_offset >= MAX_SECTOR_PER_PAGE -1 ) )		// 2 ÆäÀÌÁö ÀÌ»ó write
+		/* ========== (2) cursor ¹× metadata ¾÷µ¥ÀÌÆ® -> "ÇÑ ÆäÀÌÁö ´ÜÀ§" ========== */
+		// sector_offsetÀÌ ¸¶Áö¸· sector ÀÏ ¶§  : sector_offset = sector_cnt-1
+		// sector_offfset + 1ÀÌ 128¹è¼öÀÏ ¶§ : (sector_offset + 1) % 128 == 0
+		if ( sector_offset == (sector_cnt - 1) || (sector_offset + 1) % MAX_SECTORS_PER_PAGE == 0 )
 		{
-			/* ========== (2) cursor ¾÷µ¥ÀÌÆ® ========== */
+			UINT32 block_offset = get_block_offset(g_Map, targetLBA);
+
+			/* ========== (2-1) cursor ¾÷µ¥ÀÌÆ® ========== */
 			BLOCK_CURSOR* target_cursor = g_Cursor + block_offset;
 			set_cursor_next_page(target_cursor);
 
-			/* ========== (3) metadata ¾÷µ¥ÀÌÆ® ========== */	
-			UINT32 firstLBA_in_page = 0;				// ÇöÀç ÇÑ ÆäÀÌÁö¿¡ µé¾î°¡´Â Ã¹¹øÂ° LBA
-			UINT32 sectors_in_page = 0;					// ÇöÀç ÇÑ ÆäÀÌÁö¿¡ µé¾î°¡´Â sectorÀÇ °³¼ö
-
+			/* ========== (2-2) metadata ¾÷µ¥ÀÌÆ® ========== */	
+			UINT32 firstLBA_in_page = 0;				// ÇöÀç ÆäÀÌÁö 1°³¿¡ µé¾î°¡´Â Ã¹¹øÂ° LBA
+			UINT32 sectors_in_page = 0;					// ÇöÀç ÆäÀÌÁö 1°³¿¡ µé¾î°¡´Â sectorÀÇ °³¼ö
 			if (set_page == 0)		// Ã¹¹øÂ° page
 			{
 				firstLBA_in_page = startLBA;
-				sectors_in_page = (sector_offset == sector_cnt - 1) ? sector_cnt : MAX_SECTOR_PER_PAGE;
+				sectors_in_page = (sector_offset == sector_cnt - 1) ? sector_cnt : MAX_SECTORS_PER_PAGE;
 
 				set_page++;
 			}
 			else    // µÎ¹øÂ° page ÀÌ»óºÎÅÍ
 			{
-				firstLBA_in_page = set_page * MAX_SECTOR_PER_PAGE;		
-				sectors_in_page = (sector_offset == sector_cnt - 1) ? (sector_cnt - (set_page * MAX_SECTOR_PER_PAGE)) : MAX_SECTOR_PER_PAGE;
+				firstLBA_in_page = set_page * MAX_SECTORS_PER_PAGE;		
+				sectors_in_page = (sector_offset == sector_cnt - 1) ? (sector_cnt - (set_page * MAX_SECTORS_PER_PAGE)) : MAX_SECTORS_PER_PAGE;
 
 				set_page++;
 			}
 
-#if 0
-			if (sector_offset > MAX_SECTOR_PER_PAGE)	// sector_cnt°¡ 128À» ³ÑÀ» ¶§
-			{
-				firstLBA_in_page = targetLBA;
-
-				if(sector_offset == sector_cnt - 1)			// sector_offsetÀÌ ¸¶Áö¸· sectorÀÏ ¶§ °è»ê½Ä »ç¿ë
-					sectors_in_page = sector_cnt - (page_cnt) * MAX_SECTOR_PER_PAGE;
-
-				//if (sector_offset % (MAX_SECTOR_PER_PAGE - 1) == 0)		// sector_offsetÀÌ 128¹è¼ö ÀÏ ¶§´Â 128°³
-				else			// sector_offsetÀÌ 128¹è¼ö ÀÏ ¶§´Â 128°³
-					sectors_in_page = MAX_SECTOR_PER_PAGE;
-			}
-
-			else          // sector_cnt°¡ 128 ÀÌÇÏÀÏ ¶§
-			{
-				firstLBA_in_page = startLBA;
-				if(sector_offset % (MAX_SECTOR_PER_PAGE - 1) == 0)
-					sectors_in_page = MAX_SECTOR_PER_PAGE;
-				else
-					sectors_in_page = sector_cnt;
-			}
-
-			//if (sector_offset % (MAX_SECTOR_PER_PAGE - 1) == 0)		// sector_offsetÀÌ 128¹è¼ö ÀÏ ¶§´Â 128°³
-			//	sectors_in_page = MAX_SECTOR_PER_PAGE;
-			//else				// sector_offsetÀÌ ¸¶Áö¸· sectorÀÏ ¶§´Â °è»ê½Ä ÀÌ¿ë
-			//	sectors_in_page = sector_cnt - (page_cnt ) * MAX_SECTOR_PER_PAGE;		
-#endif
 			BLOCK_META* target_metadata = g_Meta + block_offset;
 			update_validBitmap_one(target_metadata, firstLBA_in_page, sectors_in_page);
 			update_BlockState(target_metadata);
@@ -231,97 +210,6 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 			write_single_page(firstLBA_in_page, sectors_in_page);
 		}
 	}
-	//---------------
-#if 0
-	for (UINT32 sector_offset = 0; sector_offset < sector_cnt; sector_offset++)
-	{
-		UINT32 targetLBA = startLBA + sector_offset;
-
-		/* ========== (0) LBA¿Í ¸ÅÄªµÇ´Â pba Ã£±â ========== */
-		UINT16 PBA = get_pba(g_Map, targetLBA);
-
-		/* ========== (1) PBA¸¦ bank, block, page·Î ºÐ¸® ========== */
-		bank = (PBA >> 14) & 0x03;
-		block = (PBA >> 7) & 0x7F;
-		page = (PBA) & 0x7F;
-		
-		/* ========== (2) write ÇÒ ¼ö ÀÖ´Â page Ã£±â ========== */
-		while (1)
-		{
-			//block_offset = bank * BLOCK_NUM + block;
-			cur_cursor = g_Cursor + block_offset;				// g_Cursor¿¡¼­ ÇöÀç cursor¸¦ ±¸ÇÒ À§Ä¡
-			cur_page = get_block_write_page_idx(cur_cursor);	// ±× À§Ä¡¿¡ ÀúÀåµÇ¾îÀÖ´Â cursor °ª = writeÇÒ ¼ö ÀÖ´Â page
-
-			if (cur_page == PAGE_FULL)		// ÇöÀç blockÀÇ ¸ðµç page°¡ °¡µæ Â÷ÀÖÀ¸¸é ´ÙÀ½ blockÀ¸·Î º¯°æ
-			{
-				block ++;
-
-				if (block >= BLOCK_NUM)		// block°³¼ö ³Ñ¾î°¡¸é ´ÙÀ½ bank·Î ÀÌµ¿
-				{
-					bank ++;
-					block = 0;
-				}
-				if (bank >= BANK_NUM)		// bank °³¼ö°¡ ÃÖ´ë ³Ñ¾î°¡´Â °æ¿ì (¿ë·® ÃÊ°ú = ¾µ ¼ö ÀÖ´Â page ¾øÀ½)
-				{
-					bank = BANK_NUM - 1;
-					return FALSE;
-				}
-			}
-
-			else                 // ÇöÀç block¿¡ writeÇÒ ¼ö ÀÖ´Â page°¡ ÀÖ´Â °æ¿ì
-			{
-				page = cur_page;		// page º¯°æ
-				break;
-			}
-		}
-
-		/* ========== (3) bank, block, page¸¦ PBA·Î ÇÕÄ¡±â ========== */
-		PBA =	((bank & 0x03) << 14) |			// »óÀ§ 2ºñÆ®
-				((block & 0x7F) << 7) |			// Áß°£ 7ºñÆ®
-				((page & 0x7F));				// ÇÏÀ§ 7ºñÆ®
-
-		/* ========== (4) map ¾÷µ¥ÀÌÆ® ========== */
-		set_pba(g_Map, targetLBA, PBA);
-
-		/* ========== (5) cursor ¾÷µ¥ÀÌÆ® ========== */
-		// (*) sector_cnt¸¦ 128º¸´Ù Å©°Ô writeÇÒ ¶§
-		if (sector_cnt > MAX_SECTOR_PER_PAGE)		
-		{
-			if (sector_offset % MAX_SECTOR_PER_PAGE == 0)		// sector_offsetÀÌ 128 ¹è¼öÀÏ¶§ ¸¶´Ù(ÇÑ ÆäÀÌÁö Ã¤¿ò) cursor ¾÷µ¥ÀÌÆ®
-			{
-				set_cursor_next_page(cur_cursor);
-
-				BLOCK_META* target_metadata = g_Meta + block_offset;
-				update_validBitmap_one(target_metadata, startLBA, sector_cnt);
-				update_BlockState(target_metadata);
-			}
-
-
-		}
-		// (*) sector_cnt¸¦ 128ÀÌÇÏ·Î writeÇÒ ¶§
-		else		
-		{	
-			if (sector_offset == sector_cnt - 1)		
-			{
-				set_cursor_next_page(cur_cursor);		// sector_offsetÀÌ sector_cnt-1 ÀÏ¶§¸¸ cursor ¾÷µ¥ÀÌÆ®
-
-				BLOCK_META* target_metadata = g_Meta + block_offset;
-				update_validBitmap_one(target_metadata, startLBA, sector_cnt);
-				update_BlockState(target_metadata);
-			}
-		}
-	}
-#endif
-	///* ========== (6) Page.bin¿¡ write ========== */
-	//process_write_pages(startLBA, sector_cnt);
-
-	/* ========== (7) metadata ¾÷µ¥ÀÌÆ® ========== */
-	//BLOCK_META* target_metadata = g_Meta + block_offset;
-	//update_validBitmap_one(target_metadata, startLBA, sector_cnt);
-	//update_BlockState(target_metadata);
-
-	///* ========== (7) cursor ¾÷µ¥ÀÌÆ® ========== */
-	//set_cursor_next_page(cur_cursor);
 
 	return TRUE;
 }
