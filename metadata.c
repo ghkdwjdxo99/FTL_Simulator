@@ -1,4 +1,5 @@
 #include "metadata.h"
+#include "map_address.h"
 
 // type, valid count 초기화 함수 : bank 0 block 0 만 meta, 나머지는 free
 BOOL init_BlockState(BLOCK_META* metadata_base)
@@ -88,7 +89,28 @@ void update_BlockState(BLOCK_META* target_metadata)
 	target_metadata->BlockState = (block_type & 0xF0000000) | (valid_cnt & 0x0000FFFF);
 }
 
-// sector_cnt만큼 bitmap을 1로 변경하는 함수
+// lba에 해당하는 특정 bitmap을 sector_cnt만큼 bitmap을 1로 변경하는 함수 (page 하나 기준)
+void update_validBitmap_one(BLOCK_META* target_metadata, UINT32 target_LBA, UINT32 sectors_in_page)
+{
+	UINT8 target_page = get_page(g_Map, target_LBA);
+
+	UINT8* target_Bitmap = ((target_metadata->validBitmap) + (target_page * BITMAP_BYTES_PER_PAGE));
+	UINT32 set_sectors = 0;
+	for (UINT8 byte_offset = 0; byte_offset < BITMAP_BYTES_PER_PAGE; byte_offset++)
+	{
+		UINT8* target_Bitmap_Byte = target_Bitmap + byte_offset;
+		for (UINT8 bit_offset = 0; bit_offset < 8; bit_offset++)
+		{
+			UINT8 mask = 1u << bit_offset;
+			*target_Bitmap_Byte = *target_Bitmap_Byte | mask;
+			set_sectors++;
+			if (set_sectors == sectors_in_page)
+				return;
+		}
+	}
+}
+
+#if 0
 void update_validBitmap_one(BLOCK_META* target_metadata, UINT8 target_page, UINT32 sector_cnt)
 {
 	UINT32 page_offset = target_page * BITMAP_BYTES_PER_PAGE;
@@ -106,6 +128,7 @@ void update_validBitmap_one(BLOCK_META* target_metadata, UINT8 target_page, UINT
 		}
 	}
 }
+#endif
 
 // bitmap 변경 함수
 void update_validBitmap(BLOCK_META* metadata_base, UINT32 target_LBA, UINT16 target_PBA)

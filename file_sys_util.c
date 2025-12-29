@@ -81,24 +81,3 @@ BOOL read_file(const char* path, void* buf)
 }
 
 
-// 8 Byte 데이터 만들어서 data_buf에 저장
-BOOL put_sector_data(UINT8* buf, UINT32 lba, UINT32 timestamp)
-{
-	UINT64 data = ((UINT64)lba << 32) | ((UINT64)timestamp);
-	memcpy(buf, &data, 8);
-
-	return TRUE;
-}
-
-// 8 Byte 데이터를 size만큼 만들어서 page_buf에 저장
-BOOL put_total_data(UINT8* data_buf, UINT32 start_lba, UINT32 sector_cnt, UINT32 timestamp)
-{
-	for (UINT8 s = 0; s < sector_cnt; s++)
-	{
-		UINT32 offset = DATA_WRITE_SIZE * s;
-		UINT32 lba = start_lba + s;
-
-		put_sector_data(data_buf + offset, lba, timestamp);
-	}
-	return TRUE;
-}

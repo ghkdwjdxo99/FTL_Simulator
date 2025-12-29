@@ -74,7 +74,7 @@ int main(void)
 			printf("> Total Write 'Sector_cnt' : ");
 			scanf("%u", &sector_cnt);
 
-			write(startLBA, sector_cnt);
+			ftl_write(startLBA, sector_cnt);
 			printf("===================================================================\n");
 		}
 		else if (cmd == 6)		// seq Read
@@ -106,10 +106,6 @@ int main(void)
 			break;
 		}
 	}
-	
-
-
-
 
 
 	return 0;

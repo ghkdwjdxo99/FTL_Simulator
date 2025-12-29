@@ -19,10 +19,4 @@ BOOL read_file(const char* path, void* buf);
 
 
 /* ======== Application Function ======== */
-/* write */
-// 8 Byte 짜리 데이터 만들기
-BOOL put_sector_data(UINT8* data_buf, UINT32 lba, UINT32 timestamp);
-
-// 8 Byte 데이터 붙여서 Page buf 만들기
-BOOL put_total_data(UINT8* data_buf, UINT32 start_lba, UINT32 size, UINT32 timestamp);
 

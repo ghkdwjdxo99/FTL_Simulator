@@ -21,6 +21,30 @@ UINT16 get_pba(MAP_ADDR* map_addr_base, UINT32 target_lba)
 	return *(map_addr_base + target_lba);
 }
 
+UINT8 get_bank(MAP_ADDR* map_addr_base, UINT32 target_lba)
+{
+	UINT16 pba = *(map_addr_base + target_lba);
+	//bank = (PBA >> 14) & 0x03;
+	return ((pba >> 14) & 0x03);
+	//page = (PBA) & 0x7F;
+}
+
+UINT8 get_block(MAP_ADDR* map_addr_base, UINT32 target_lba)
+{
+	UINT16 pba = *(map_addr_base + target_lba);
+	//bank = (PBA >> 14) & 0x03;
+	return ((pba >> 7) & 0x7F);
+	//page = (PBA) & 0x7F;
+}
+
+UINT8 get_page(MAP_ADDR* map_addr_base, UINT32 target_lba)
+{
+	UINT16 pba = *(map_addr_base + target_lba);
+	//bank = (PBA >> 14) & 0x03;
+	return ((pba) & 0x7F);
+	//page = (PBA) & 0x7F;
+}
+
 // .bin ÆÄÀÏ·Î Save
 BOOL save_map_address(const char* path, const MAP_ADDR* map_addr_base) {
 	FILE* fp = fopen(path, "wb");
