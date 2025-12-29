@@ -105,22 +105,22 @@ BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page)		// firstLBA : Ç
 UINT16 find_enable_pba(MAP_ADDR* map_addr_base, UINT32 target_lba)
 {
 	///* ========== (0) LBA¿Í ¸ÅÄªµÇ´Â pba Ã£±â ========== */
-	//UINT16 origin_pba = get_pba(map_addr_base, target_lba);
+	UINT16 origin_pba = get_pba(map_addr_base, target_lba);
 
 	/* ========== (1) PBA¸¦ bank, block, page·Î ºĞ¸® ========== */
-	UINT8 bank = get_bank(map_addr_base, target_lba);
-	UINT8 block = get_block(map_addr_base, target_lba);
-	UINT8 page = get_page(map_addr_base, target_lba);
+	//UINT8 bank = get_bank(map_addr_base, target_lba);
+	//UINT8 block = get_block(map_addr_base, target_lba);
+	//UINT8 page = get_page(map_addr_base, target_lba);
 
-	//UINT8 bank = (origin_pba >> 14) & 0x03;
-	//UINT8 block = (origin_pba >> 7) & 0x7F;
-	//UINT8 page = (origin_pba) & 0x7F;
+	UINT8 bank = (origin_pba >> 14) & 0x03;
+	UINT8 block = (origin_pba >> 7) & 0x7F;
+	UINT8 page = (origin_pba) & 0x7F;
 
 	/* ========== (2) write ÇÒ ¼ö ÀÖ´Â page Ã£±â ========== */
 	while (1)
 	{
-		//UINT32 block_offset = bank * BLOCK_NUM + block;
-		UINT32 block_offset = get_block_offset(map_addr_base, target_lba);
+		UINT32 block_offset = bank * BLOCK_NUM + block;
+		//UINT32 block_offset = get_block_offset(map_addr_base, target_lba);
 
 		BLOCK_CURSOR* target_cursor = g_Cursor + block_offset;				// g_Cursor¿¡¼­ ÇöÀç cursor¸¦ ±¸ÇÒ À§Ä¡
 		UINT8 cur_page = get_block_write_page_idx(target_cursor);	// ±× À§Ä¡¿¡ ÀúÀåµÇ¾îÀÖ´Â cursor °ª = writeÇÒ ¼ö ÀÖ´Â page
