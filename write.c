@@ -39,7 +39,7 @@ void get_page_path_from_lba(UINT32 targetLBA, char* out_path)
 	sprintf(out_path, "%c\\%u\\P%u.bin", 'A' + bank, block, page);
 }
 
-// 한 Page에 8 Byte 데이터 쓰기
+// 한 Page first LBA ~ sectors_in_page 개수 만큼 채우기
 BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page)		// firstLBA : 한 page에 write할 가장 첫번째 lba 번호, sectors_in_page : 한 page에 write할 sector의 개수
 {
 	UINT8 data_buf[PAGE_SIZE] = { 0 };
@@ -196,7 +196,7 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 			}
 			else    // 두번째 page 이상부터
 			{
-				firstLBA_in_page = set_page * MAX_SECTORS_PER_PAGE;		
+				firstLBA_in_page = set_page * MAX_SECTORS_PER_PAGE;
 				sectors_in_page = (sector_offset == sector_cnt - 1) ? (sector_cnt - (set_page * MAX_SECTORS_PER_PAGE)) : MAX_SECTORS_PER_PAGE;
 
 				set_page++;

@@ -43,6 +43,10 @@ int main(void)
 
 	create_nand_dirs();
 
+	init_metadata(g_Meta);
+	init_map_addr_zero(g_Map);
+	init_cursor(g_Cursor);
+
 	UINT8 cmd = 0;
 	while (1)
 	{
