@@ -33,7 +33,7 @@
     <ClCompile Include="write.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="init.c">
+    <ClCompile Include="read.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClInclude Include="write.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="init.h">
+    <ClInclude Include="read.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

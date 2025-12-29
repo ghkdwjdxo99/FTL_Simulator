@@ -1,5 +1,52 @@
 #include "file_sys_util.h"
 
+void pba_to_bank_block_page(UINT32 lba, UINT32* bank, UINT32* block, UINT32* page)
+{
+	// PBA는 sector index라고 가정
+	const UINT32 sectors_per_page = MAX_SECTORS_PER_PAGE;
+	const UINT32 sectors_per_block = MAX_SECTORS_PER_PAGE * PAGE_NUM;
+	const UINT32 sectors_per_bank = sectors_per_block * BLOCK_NUM;
+
+	UINT32 b = lba / sectors_per_bank;
+	UINT32 r = lba % sectors_per_bank;
+
+	UINT32 bl = r / sectors_per_block;
+	r = r % sectors_per_block;
+
+	UINT32 p = r / sectors_per_page;
+
+	if (bank)  *bank = b;
+	if (block) *block = bl;
+	if (page)  *page = p;
+}
+
+void get_bank_path(UINT32 pba, char* buf)
+{
+	UINT32 bank;
+	pba_to_bank_block_page(pba, &bank, NULL, NULL);
+
+	// 현재 디렉터리 기준: ./A
+	snprintf(buf, 64, "./%c", (char)('A' + bank));
+}
+
+void get_block_path(UINT32 pba, char* buf)
+{
+	UINT32 bank, block;
+	pba_to_bank_block_page(pba, &bank, &block, NULL);
+
+	// 현재 디렉터리 기준: ./A/0
+	snprintf(buf, 64, "./%c/%u", (char)('A' + bank), block);
+}
+
+void get_page_path(UINT32 pba, char* buf)
+{
+	UINT32 bank, block, page;
+	pba_to_bank_block_page(pba, &bank, &block, &page);
+
+	// 현재 디렉터리 기준: ./A/0/P0.bin
+	snprintf(buf, 128, "./%c/%u/P%u.bin", (char)('A' + bank), block, page);
+}
+
 BOOL make_dir(const char* path)
 {
 	if (CreateDirectoryA(path, NULL))

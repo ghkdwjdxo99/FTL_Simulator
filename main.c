@@ -5,6 +5,7 @@
 #include "file_sys_util.h"
 #include "write.h"
 #include "init.h"
+#include "read.h"
 
 // 메모리 정의
 static UINT8 G_MEM[1024 * 1024 * 18];
