@@ -56,10 +56,10 @@ UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata, UINT8* free_page_cnt
 	UINT16 valid_cnt = 0;
 	for (UINT8 page = 0; page < PAGE_NUM; page++)
 	{
+		BOOL is_page_free = TRUE;
 		for (UINT16 byte_offset = 0; byte_offset < BITMAP_BYTES_PER_PAGE; byte_offset++)
 		{
-			UINT8* target_Bitmap = target_metadata->validBitmap + (byte_offset * page);		// 비트맵을 Byte단위로 이동
-			BOOL is_page_free = TRUE;
+			UINT8* target_Bitmap = target_metadata->validBitmap + (page * BITMAP_BYTES_PER_PAGE) + byte_offset;		// 비트맵을 Byte단위로 이동
 			for (UINT8 bit_offset = 0; bit_offset < 8; bit_offset++)
 			{
 				UINT8 mask = (UINT8)(1u << bit_offset);
@@ -69,10 +69,10 @@ UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata, UINT8* free_page_cnt
 					is_page_free = FALSE;
 				}
 			}
-			if (is_page_free == FALSE)
-			{
-				*free_page_cnt--;
-			}
+		}
+		if (is_page_free == FALSE)
+		{
+			(*free_page_cnt)--;
 		}
 	}
 
