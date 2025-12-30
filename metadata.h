@@ -38,4 +38,6 @@ UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata, UINT8* free_page_cnt
 BOOL save_metadata(const char* filename, BLOCK_META const* metadata_base);
 BOOL load_metadata(const char* filename, BLOCK_META* metadata_base);
 
+// 보여주기
+void show_metadata(BLOCK_META* target_meta);
 

@@ -15,6 +15,24 @@ BLOCK_META*		const g_Meta	= (BLOCK_META*)	  G_MEM;
 MAP_ADDR*		const g_Map		= (MAP_ADDR*)	 (G_MEM + TOTAL_META_SIZE);
 BLOCK_CURSOR*	const g_Cursor	= (BLOCK_CURSOR*)(G_MEM + TOTAL_META_SIZE + TOTAL_MAP_SIZE);
 
+static void flush_stdin_line(void)
+{
+	int c;
+	while ((c = getchar()) != '\n' && c != EOF) {}
+}
+
+static void wait_enter(void)
+{
+	int c;
+	printf("\nPress ENTER to continue...");
+	fflush(stdout);
+
+	// 엔터(\n)가 나올 때까지 무조건 대기
+	do {
+		c = getchar();
+	} while (c != '\n' && c != EOF);
+}
+
 UINT8 select_menu(UINT8 cmd)					/* 2. 메뉴 선택 */
 {
 	printf("\n---------------------- Menu -----------------------------\n");
@@ -34,11 +52,11 @@ UINT8 select_menu(UINT8 cmd)					/* 2. 메뉴 선택 */
 
 int main(void)
 {
-	printf("sizeof(g_Meta) : %llu bytes\n", TOTAL_META_SIZE);
+/*	printf("sizeof(g_Meta) : %llu bytes\n", TOTAL_META_SIZE);
 	printf("sizeof(g_Map) : %llu bytes\n", TOTAL_MAP_SIZE);
 	printf("sizeof(g_Cursor) : %llu bytes\n", TOTAL_CURSOR_SIZE);
 	printf("Total G_MEM size : %llu bytes\n", TOTAL_META_SIZE+ TOTAL_MAP_SIZE +TOTAL_CURSOR_SIZE);
-		
+	*/	
 	load_bin_files(g_Meta, g_Map, g_Cursor);
 	create_nand_dirs();
 
@@ -59,7 +77,36 @@ int main(void)
 		}
 		else if (cmd == 2)
 		{
+			UINT8 option = 0;
+			printf("> Select option ( 0 : total bank, 1 : one bank ) : "), scanf("%u", &option);
+			flush_stdin_line();
 
+			if (option == 0)		// 전체 bank 출력
+			{
+				for (UINT8 bank = 0; bank < BANK_NUM; bank++)
+				{
+					BLOCK_META* target_meta = g_Meta + bank * BLOCK_NUM;
+					printf("\n===================================================================\n");
+					printf("[Meta Summary] bank = %u\n", bank);
+					show_metadata(target_meta);
+					printf("===================================================================\n");
+
+					wait_enter();
+				}
+
+			}
+			else if (option == 1)		//  특정 bank만 출력
+			{
+				UINT8 bank = 0;
+				printf("> Input BANK NUMBER (0 ~ 3) : "), scanf("%u", &bank);							
+				flush_stdin_line();
+
+				BLOCK_META* target_meta = g_Meta + bank * BLOCK_NUM;
+				printf("\n===================================================================\n");
+				printf("[Meta Summary] bank = %u\n", bank);
+				show_metadata(target_meta);
+				printf("===================================================================\n");
+			}
 		}
 		else if (cmd == 3)
 		{
