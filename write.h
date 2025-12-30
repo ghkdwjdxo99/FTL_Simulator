@@ -1,7 +1,6 @@
 #pragma once
 #include "config.h"
 
-
 // seq : start lba, sector size 입력받기
 // random : start lba, sector size를 랜덤으로
 
@@ -14,7 +13,6 @@
 	// bitmap 업데이트
 	// blockstate 업데이트
 // cursor 업데이트
-
 
 // 8 Byte 데이터 1개 만들어서 buf에 저장
 BOOL put_sector_data(UINT8* buf, UINT32 lba, UINT32 timestamp);

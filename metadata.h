@@ -23,15 +23,14 @@
 
 /* =================== function ==========================*/
 // 초기화
+BOOL init_metadata(BLOCK_META* metadata_base);
 BOOL init_BlockState(BLOCK_META* metadata_base);
 BOOL init_validBitmap(BLOCK_META* metadata_base);
-BOOL init_metadata(BLOCK_META* metadata_base);
 
 // 변경
-void update_BlockState(BLOCK_META* target_metadata);
-//void update_validBitmap_one(BLOCK_META* target_metadata, UINT8 target_page, UINT32 sector_cnt);
-void update_validBitmap_one(BLOCK_META* target_metadata, UINT32 target_LBA, UINT32 sectors_in_page);
-void update_validBitmap(BLOCK_META* metadata_base, UINT32 target_LBA, UINT16 target_PBA);
+BOOL update_metadata(BLOCK_META* target_metadata, UINT32 target_LBA, UINT32 sectors_in_page);
+BOOL update_BlockState(BLOCK_META* target_metadata);
+BOOL update_validBitmap_one(BLOCK_META* target_metadata, UINT32 target_LBA, UINT32 sectors_in_page);
 UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata, UINT8* free_page_cnt);
 
 

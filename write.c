@@ -39,7 +39,7 @@ void get_page_path_from_lba(UINT32 targetLBA, char* out_path)
 	sprintf(out_path, "%c\\%u\\P%u.bin", 'A' + bank, block, page);
 }
 
-// ÇÑ Page first LBA ~ sectors_in_page °³¼ö ¸¸Å­ Ã¤¿ì±â
+// page ÇÏ³ª¿¡ ÇØ´çÇÏ´Â sector data¸¦ ¸¸µé°í page.bin ÆÄÀÏ¿¡ writeÇÏ´Â ÇÔ¼ö
 BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page)		// firstLBA : ÇÑ page¿¡ writeÇÒ °¡Àå Ã¹¹øÂ° lba ¹øÈ£, sectors_in_page : ÇÑ page¿¡ writeÇÒ sectorÀÇ °³¼ö
 {
 	UINT8 data_buf[PAGE_SIZE] = { 0 };
@@ -49,8 +49,6 @@ BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page)		// firstLBA : Ç
 
 	char page_path[16];
 	get_page_path_from_lba(firstLBA, &page_path);		// ÇöÀç LBA¿¡ ÇØ´çÇÏ´Â pageÀÇ path °¡Á®¿À±â
-	
-	printf("\n\n\n%s\n\n\n", page_path);
 
 	write_file(page_path, data_buf, sectors_in_page);	// ÇØ´ç path¿¡ data_buf¿¡ ÀÖ´Â µ¥ÀÌÅÍ¸¦ ¾²±â
 }
@@ -180,16 +178,10 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 		// sector_offfset + 1ÀÌ 128¹è¼öÀÏ ¶§ : (sector_offset + 1) % 128 == 0
 		if ( sector_offset == (sector_cnt - 1) || (sector_offset + 1) % MAX_SECTORS_PER_PAGE == 0 )
 		{
-			UINT32 block_offset = get_block_offset(g_Map, targetLBA);
-
-			/* ========== (2-1) cursor ¾÷µ¥ÀÌÆ® ========== */
-			BLOCK_CURSOR* target_cursor = g_Cursor + block_offset;
-			set_cursor_next_page(target_cursor);
-
-			/* ========== (2-2) metadata ¾÷µ¥ÀÌÆ® ========== */	
+			/* ========== (2-0) Áö±İ ¾²·Á´Â page ±âÁØ : Ã¹¹øÂ° LBA¿Í sectorÀÇ °³¼ö ±¸ÇÏ±â ========== */
 			UINT32 firstLBA_in_page = 0;				// ÇöÀç ÆäÀÌÁö 1°³¿¡ µé¾î°¡´Â Ã¹¹øÂ° LBA
 			UINT32 sectors_in_page = 0;					// ÇöÀç ÆäÀÌÁö 1°³¿¡ µé¾î°¡´Â sectorÀÇ °³¼ö
-			if (set_page == 0)		// Ã¹¹øÂ° page
+			if (set_page == 0)		// Ã¹¹øÂ° page¸¦ ¾µ ¶§
 			{
 				firstLBA_in_page = startLBA;
 				sectors_in_page = (sector_offset == sector_cnt - 1) ? sector_cnt : MAX_SECTORS_PER_PAGE;
@@ -204,11 +196,16 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 				set_page++;
 			}
 
-			BLOCK_META* target_metadata = g_Meta + block_offset;
-			update_validBitmap_one(target_metadata, firstLBA_in_page, sectors_in_page);
-			update_BlockState(target_metadata);
+			/* ========== (2-1) cursor ¾÷µ¥ÀÌÆ® ========== */
+			UINT32 block_offset = get_block_offset(g_Map, targetLBA);
+			BLOCK_CURSOR* target_cursor = g_Cursor + block_offset;
+			set_cursor_next_page(target_cursor);
 
-			/* ========== (4) Page.bin¿¡ write ========== */
+			/* ========== (2-2) metadata ¾÷µ¥ÀÌÆ® ========== */	
+			BLOCK_META* target_metadata = g_Meta + block_offset;
+			update_metadata(target_metadata, firstLBA_in_page, sectors_in_page);
+
+			/* ========== (2-3) Page.bin¿¡ write ========== */
 			write_single_page(firstLBA_in_page, sectors_in_page);
 		}
 	}

@@ -64,6 +64,20 @@ BOOL make_bin_file(const char* path)
 	return TRUE;
 }
 
+BOOL reset_bin_file(const char* path)
+{
+	FILE* fp = fopen(path, "w+b");		// 기존 파일 덮어쓰고 새로 생성
+	if (fp == NULL)
+	{
+		printf("fopen failed : %s\n", path);
+		return FALSE;
+	}
+
+	fclose(fp);
+	return TRUE;
+}
+
+
 // data_buf에 있는 data(8바이트 data 뭉치)를 path에 있는 file에 write
 BOOL write_file(const char* path, const void* data_buf, UINT32 sector_cnt)
 {
