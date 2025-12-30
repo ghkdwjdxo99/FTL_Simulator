@@ -1,19 +1,5 @@
 #include "viewer.h"
 
-/* 사용자 입력 관련 함수 */
-int get_any_key() {
-	return _getch();
-}
-
-int wait_key_continue() {
-	int ch = get_any_key();
-
-	if (ch == 'q' || ch == 'Q')
-		return 0;
-	return 1;
-}
-
-/* 출력 헬퍼 함수 */
 
 
 /*
@@ -105,7 +91,48 @@ void range_view_map(const MAP_ADDR* map_addr_base, UINT32 start_lba, UINT32 sect
 		printf("\n");
 }
 
+// blocktype을 문자로 변경하는 함수
+static const char* block_type_to_str(UINT32 block_type)
+{
+	switch (block_type)
+	{
+	case BT_META_DATA:			return "META";
+	case BT_FREE_DATA:			return "FREE";
+	case BT_HOST_DATA:			return "HOST";
+	case BT_REALHOST_DATA:		return "REAL HOST";
+	case BT_BAD_BLOCK:			return "BAD";
+	default:					return "UNKNOWN";
+	}
+}
 
+// metadata 보여주기
+void show_metadata(BLOCK_META* target_meta)
+{
+	printf("blk  %-9s  %7s %7s  %s\n",
+		"type", "freePg", "usedPg", "validCnt(dec/hex)");
+
+	for (UINT8 block = 0; block < BLOCK_NUM; block++)
+	{
+		BLOCK_META* target_meta_block = target_meta + block;
+
+		UINT32 block_type = (target_meta_block->BlockState) & 0xF0000000;
+		const char* type_str = block_type_to_str(block_type);
+
+		UINT8 freePg = PAGE_NUM;
+		UINT16 valid_cnt = count_valid_from_bitmap(target_meta_block, &freePg);
+		UINT8 usedPg = PAGE_NUM - freePg;
+
+		printf("%-3u  %-9s  %7u %7u  %7u (0x%04X)\n",
+			(unsigned)block,
+			type_str,
+			(unsigned)freePg,
+			(unsigned)usedPg,
+			(unsigned)valid_cnt,
+			(unsigned)valid_cnt);
+	}
+}
+
+// cursor 보여주기
 void show_cursor(BLOCK_CURSOR* target_cursor)
 {
 	printf("blk  %-9s\n", "nextPg(dec/hex)");

@@ -131,6 +131,7 @@
     <ClCompile Include="map_address.c" />
     <ClCompile Include="metadata.c" />
     <ClCompile Include="read.c" />
+    <ClCompile Include="util.c" />
     <ClCompile Include="viewer.c" />
     <ClCompile Include="write.c" />
   </ItemGroup>
@@ -143,6 +144,7 @@
     <ClInclude Include="map_address.h" />
     <ClInclude Include="metadata.h" />
     <ClInclude Include="read.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="viewer.h" />
     <ClInclude Include="write.h" />
   </ItemGroup>

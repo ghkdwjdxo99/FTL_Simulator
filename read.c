@@ -1,6 +1,42 @@
 ﻿#include "read.h"
 #include "file_sys_util.h"
 #include "map_address.h"
+#include "util.h"
+
+
+// read 버퍼에 있는 값을 출력하는 함수
+void view_read_buf(char* buf, UINT32 sector_cnt) {
+	const UINT32 col_cnt = 4;
+	const UINT32 row_cnt = col_cnt * 10;
+
+	UINT32 printed = 0;
+
+	for (UINT32 sector = 0; sector < sector_cnt; sector++) {
+		const char* p = buf + ((size_t)sector * 8);
+
+		UINT32 timestamp;
+		UINT32 lba;
+
+		memcpy(&timestamp	, p + 0, 4);
+		memcpy(&lba			, p + 4, 4);
+
+		printf("TS:0x%08X LBA: %3u |", timestamp, lba);
+
+		printed++;
+
+		// col_cnt개씩 한 줄에 찍고 개행
+		if ((printed % col_cnt) == 0)
+			printf("\n");
+
+		// row_cnt개 출력마다 pause
+		if ((printed % row_cnt) == 0) {
+			printf("Press any key if you want to continue...\n");
+			printf("Press 'q' to exit.\n");
+			if (wait_key_continue() == 0)
+				return;
+		}
+	}
+}
 
 UINT64 find_sector(UINT32 target_lba, const char* page_buf, size_t size)
 {
@@ -28,9 +64,6 @@ UINT64 find_sector(UINT32 target_lba, const char* page_buf, size_t size)
 	return 0;
 }
 
-
-
-
 size_t ftl_read(UINT32 start_lba, UINT32 sector_cnt, char* buf)
 {
 	// lba 값으로 pba를 얻은 다음
@@ -54,7 +87,7 @@ size_t ftl_read(UINT32 start_lba, UINT32 sector_cnt, char* buf)
 		get_page_path(pba, path);
 
 		// 해당 Path 파일 읽기
-		printf("%s %d\n", path, cnt);
+		//printf("%s %d\n", path, cnt);
 		size_t page_size = read_file(path, page_buf);
 		if (page_size == FALSE) {
 #ifdef DEBUG
