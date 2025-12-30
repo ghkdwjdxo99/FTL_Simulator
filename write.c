@@ -39,7 +39,7 @@ void get_page_path_from_lba(UINT32 targetLBA, char* out_path)
 	sprintf(out_path, "%c\\%u\\P%u.bin", 'A' + bank, block, page);
 }
 
-// 한 Page에 8 Byte 데이터 쓰기
+// page 하나에 해당하는 sector data를 만들고 page.bin 파일에 write하는 함수
 BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page)		// firstLBA : 한 page에 write할 가장 첫번째 lba 번호, sectors_in_page : 한 page에 write할 sector의 개수
 {
 	UINT8 data_buf[PAGE_SIZE] = { 0 };
@@ -178,16 +178,10 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 		// sector_offfset + 1이 128배수일 때 : (sector_offset + 1) % 128 == 0
 		if ( sector_offset == (sector_cnt - 1) || (sector_offset + 1) % MAX_SECTORS_PER_PAGE == 0 )
 		{
-			UINT32 block_offset = get_block_offset(g_Map, targetLBA);
-
-			/* ========== (2-1) cursor 업데이트 ========== */
-			BLOCK_CURSOR* target_cursor = g_Cursor + block_offset;
-			set_cursor_next_page(target_cursor);
-
-			/* ========== (2-2) metadata 업데이트 ========== */	
+			/* ========== (2-0) 지금 쓰려는 page 기준 : 첫번째 LBA와 sector의 개수 구하기 ========== */
 			UINT32 firstLBA_in_page = 0;				// 현재 페이지 1개에 들어가는 첫번째 LBA
 			UINT32 sectors_in_page = 0;					// 현재 페이지 1개에 들어가는 sector의 개수
-			if (set_page == 0)		// 첫번째 page
+			if (set_page == 0)		// 첫번째 page를 쓸 때
 			{
 				firstLBA_in_page = startLBA;
 				sectors_in_page = (sector_offset == sector_cnt - 1) ? sector_cnt : MAX_SECTORS_PER_PAGE;
@@ -196,17 +190,22 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 			}
 			else    // 두번째 page 이상부터
 			{
-				firstLBA_in_page = set_page * MAX_SECTORS_PER_PAGE;		
+				firstLBA_in_page = set_page * MAX_SECTORS_PER_PAGE;
 				sectors_in_page = (sector_offset == sector_cnt - 1) ? (sector_cnt - (set_page * MAX_SECTORS_PER_PAGE)) : MAX_SECTORS_PER_PAGE;
 
 				set_page++;
 			}
 
-			BLOCK_META* target_metadata = g_Meta + block_offset;
-			update_validBitmap_one(target_metadata, firstLBA_in_page, sectors_in_page);
-			update_BlockState(target_metadata);
+			/* ========== (2-1) cursor 업데이트 ========== */
+			UINT32 block_offset = get_block_offset(g_Map, targetLBA);
+			BLOCK_CURSOR* target_cursor = g_Cursor + block_offset;
+			set_cursor_next_page(target_cursor);
 
-			/* ========== (4) Page.bin에 write ========== */
+			/* ========== (2-2) metadata 업데이트 ========== */	
+			BLOCK_META* target_metadata = g_Meta + block_offset;
+			update_metadata(target_metadata, firstLBA_in_page, sectors_in_page);
+
+			/* ========== (2-3) Page.bin에 write ========== */
 			write_single_page(firstLBA_in_page, sectors_in_page);
 		}
 	}
