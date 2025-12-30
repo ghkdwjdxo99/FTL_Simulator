@@ -6,6 +6,7 @@
 #include "map_address.h"
 #include "metadata.h"
 
+void view_block_type_for_lba_range(UINT32 start_lba, UINT32 sector_cnt);
 
 // metadata 보여주기
 void show_metadata(BLOCK_META* target_meta);
