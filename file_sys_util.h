@@ -5,10 +5,10 @@
 #define DATA_PER_PAGE		(PAGE_SIZE / DATA_WRITE_SIZE)	// 1024 / 8 = 128 : Page에 쓸 수 있는 최대 data 개수
 
 /* =================== Make Path Function =================== */
-void pba_to_bank_block_page(UINT32 pba, UINT32* bank, UINT32* block, UINT32* page);
-void get_bank_path(UINT32 pba, char* buf);
-void get_block_path(UINT32 pba, char* buf);
-void get_page_path(UINT32 pba, char* buf);
+void pba_to_bank_block_page(UINT16 pba, UINT32* bank, UINT32* block, UINT32* page);
+void get_bank_path(UINT16 pba, char* buf);
+void get_block_path(UINT16 pba, char* buf);
+void get_page_path(UINT16 pba, char* buf);
 
 /* =================== Base function ==========================*/
 // make directory

@@ -131,6 +131,7 @@
     <ClCompile Include="map_address.c" />
     <ClCompile Include="metadata.c" />
     <ClCompile Include="read.c" />
+    <ClCompile Include="viewer.c" />
     <ClCompile Include="write.c" />
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +143,7 @@
     <ClInclude Include="map_address.h" />
     <ClInclude Include="metadata.h" />
     <ClInclude Include="read.h" />
+    <ClInclude Include="viewer.h" />
     <ClInclude Include="write.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
