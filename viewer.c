@@ -4,33 +4,6 @@ void view_block_type_for_lba_range(UINT32 start_lba, UINT32 sector_cnt) {
 
 }
 
-// metadata 보여주기
-void show_metadata(BLOCK_META* target_meta)
-{
-	printf("blk  %-9s  %7s %7s  %s\n",
-		"type", "freePg", "usedPg", "validCnt(dec/hex)");
-
-	for (UINT8 block = 0; block < BLOCK_NUM; block++)
-	{
-		BLOCK_META* target_meta_block = target_meta + block;
-
-		UINT32 block_type = (target_meta_block->BlockState) & 0xF0000000;
-		const char* type_str = block_type_to_str(block_type);
-
-		UINT8 freePg = PAGE_NUM;
-		UINT16 valid_cnt = count_valid_from_bitmap(target_meta_block, &freePg);
-		UINT8 usedPg = PAGE_NUM - freePg;
-
-		printf("%-3u  %-9s  %7u %7u  %7u (0x%04X)\n",
-			(unsigned)block,
-			type_str,
-			(unsigned)freePg,
-			(unsigned)usedPg,
-			(unsigned)valid_cnt,
-			(unsigned)valid_cnt);
-	}
-}
-
 /*
 // map 출력 함수
 void sequential_view_map(const MAP_ADDR* map_addr_base) {

@@ -31,6 +31,8 @@ UINT8 get_bank(MAP_ADDR* map_addr_base, UINT32 target_lba)
 	//page = (PBA) & 0x7F;
 }
 
+
+
 UINT8 get_block(MAP_ADDR* map_addr_base, UINT32 target_lba)
 {
 	UINT16 pba = *(map_addr_base + target_lba);
@@ -38,6 +40,7 @@ UINT8 get_block(MAP_ADDR* map_addr_base, UINT32 target_lba)
 	return ((pba >> 7) & 0x7F);
 	//page = (PBA) & 0x7F;
 }
+
 
 UINT8 get_block_offset(MAP_ADDR* map_addr_base, UINT32 target_lba)
 {
@@ -53,6 +56,19 @@ UINT8 get_page(MAP_ADDR* map_addr_base, UINT32 target_lba)
 	//bank = (PBA >> 14) & 0x03;
 	return ((pba) & 0x7F);
 	//page = (PBA) & 0x7F;
+}
+
+UINT8 get_bank_from_pba(UINT16 target_pba)
+{
+	return ((target_pba >> 14) & 0x03);
+}
+UINT8 get_block_from_pba(UINT16 target_pba)
+{
+	return ((target_pba >> 7) & 0x7F);
+}
+UINT8 get_page_from_pba(UINT16 target_pba)
+{
+	return (target_pba & 0x7F);
 }
 
 // .bin ÆÄÀÏ·Î Save

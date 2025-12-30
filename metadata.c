@@ -132,6 +132,54 @@ BOOL update_validBitmap_one(BLOCK_META* target_metadata, UINT32 target_LBA, UINT
 	return TRUE;
 }
 
+// lba에 해당하는 특정 bitmap을 sector_cnt만큼 bitmap을 0으로 변경하는 함수 (page 하나 기준)
+BOOL update_validBitmap_zero(BLOCK_META* metadata_base, UINT32 target_PBA)
+{
+	if (metadata_base == NULL)
+		return FALSE;
+
+	UINT8 target_bank = get_bank_from_pba(target_PBA);
+	UINT8 target_block = get_block_from_pba(target_PBA);
+	UINT8 target_page = get_page_from_pba(target_PBA);
+
+	UINT16 block_offset = target_bank * BLOCK_NUM + target_block;
+
+	BLOCK_META* target_metadata = metadata_base + block_offset;
+
+	UINT8* target_Bitmap = ((target_metadata->validBitmap) + (target_page * BITMAP_BYTES_PER_PAGE));
+
+	for (UINT16 byte_offset = 0; byte_offset < BITMAP_BYTES_PER_PAGE; byte_offset++)
+	{
+		UINT8* target_Bitmap_Byte = target_Bitmap + byte_offset;
+		for (UINT8 bit_offset = 0; bit_offset < 8; bit_offset++)
+		{
+			UINT8 mask = (UINT8)(1u << bit_offset);
+			if (*target_Bitmap_Byte & mask)		// Byte단위 비트맵을 마스크를 이용해서 비트단위로 1이 있는지 확인
+			{
+				*target_Bitmap_Byte = *target_Bitmap_Byte &= ~mask;
+				return TRUE;
+			}
+			else
+				continue;
+		}
+	}
+
+	return FALSE;
+	//UINT32 set_sectors = 0;
+	//for (UINT8 byte_offset = 0; byte_offset < BITMAP_BYTES_PER_PAGE; byte_offset++)
+	//{
+	//	UINT8* target_Bitmap_Byte = target_Bitmap + byte_offset;
+	//	for (UINT8 bit_offset = 0; bit_offset < 8; bit_offset++)
+	//	{
+	//		UINT8 mask = 1u << bit_offset;
+	//		*target_Bitmap_Byte = *target_Bitmap_Byte | mask;
+	//		set_sectors++;
+	//		if (set_sectors == sectors_in_page)
+	//			return;
+	//	}
+	//}
+}
+
 // metadata 변경 함수
 BOOL update_metadata(BLOCK_META* target_metadata, UINT32 target_LBA, UINT32 sectors_in_page)
 {

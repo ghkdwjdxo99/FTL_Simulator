@@ -25,6 +25,11 @@ UINT8 get_block(MAP_ADDR* map_addr_base, UINT32 target_lba);
 UINT8 get_page(MAP_ADDR* map_addr_base, UINT32 target_lba);
 UINT8 get_block_offset(MAP_ADDR* map_addr_base, UINT32 target_lba);
 
+
+UINT8 get_bank_from_pba(UINT16 target_pba);
+UINT8 get_block_from_pba(UINT16 target_pba);
+UINT8 get_page_from_pba(UINT16 target_pba);
+
 // .bin ÆÄÀÏ·Î Save
 BOOL save_map_address(const char* path, const MAP_ADDR* map_addr_base);
 

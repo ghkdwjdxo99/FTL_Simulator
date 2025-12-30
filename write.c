@@ -164,10 +164,14 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 		UINT32 targetLBA = startLBA + sector_offset;
 
 		/* ========== (0) sector 단위로 write할 수 있는 위치 찾기 ========== */
+		UINT16 origin_PBA = get_pba(g_Map, targetLBA);
 		UINT16 new_PBA = find_enable_pba(g_Map, targetLBA);		
 
 		/* ========== (1) map 업데이트 ========== */
 		set_pba(g_Map, targetLBA, new_PBA);
+
+		/* ========== (1-1) 이전 pba를 기준으로 bitmap을 0으로 업데이트 ========== */
+		update_validBitmap_zero(g_Meta, origin_PBA);
 
 		//UINT8 bank	= get_bank(g_Map, targetLBA);
 		//UINT8 block = get_block(g_Map, targetLBA);

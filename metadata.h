@@ -31,6 +31,7 @@ BOOL init_validBitmap(BLOCK_META* metadata_base);
 BOOL update_metadata(BLOCK_META* target_metadata, UINT32 target_LBA, UINT32 sectors_in_page);
 BOOL update_BlockState(BLOCK_META* target_metadata);
 BOOL update_validBitmap_one(BLOCK_META* target_metadata, UINT32 target_LBA, UINT32 sectors_in_page);
+BOOL update_validBitmap_zero(BLOCK_META* metadata_base, UINT32 target_PBA);
 UINT16 count_valid_from_bitmap(BLOCK_META* target_metadata, UINT8* free_page_cnt);
 
 
