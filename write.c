@@ -49,6 +49,8 @@ BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page)		// firstLBA : Ç
 
 	char page_path[16];
 	get_page_path_from_lba(firstLBA, &page_path);		// ÇöÀç LBA¿¡ ÇØ´çÇÏ´Â pageÀÇ path °¡Á®¿À±â
+	
+	printf("\n\n\n%s\n\n\n", page_path);
 
 	write_file(page_path, data_buf, sectors_in_page);	// ÇØ´ç path¿¡ data_buf¿¡ ÀÖ´Â µ¥ÀÌÅÍ¸¦ ¾²±â
 }

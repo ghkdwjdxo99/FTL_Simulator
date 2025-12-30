@@ -39,18 +39,17 @@ int main(void)
 	printf("sizeof(g_Cursor) : %llu bytes\n", TOTAL_CURSOR_SIZE);
 	printf("Total G_MEM size : %llu bytes\n", TOTAL_META_SIZE+ TOTAL_MAP_SIZE +TOTAL_CURSOR_SIZE);
 		
-	load_bin_files(g_Meta, g_Map, g_Cursor);
 	init_metadata(g_Meta);
 	init_map_addr_zero(g_Map);
 	init_cursor(g_Cursor);
+
+	load_bin_files(g_Meta, g_Map, g_Cursor);
 
 	create_nand_dirs();
 
-	init_metadata(g_Meta);
-	init_map_addr_zero(g_Map);
-	init_cursor(g_Cursor);
-
 	UINT8 cmd = 0;
+
+	char read_buffer[PAGE_NUM * PAGE_SIZE];
 	while (1)
 	{
 		cmd = select_menu(cmd);
@@ -89,12 +88,17 @@ int main(void)
 		{
 			UINT32 startLBA;
 			UINT32 sector_cnt;
-			printf("> read 시작 LBA (Max 8,388,608) : ");		// 몇번 LBA부터 read
+			printf("> 'Start LBA' (Max 8,388,608) : ");	// 몇번 LBA부터 Read
 			scanf("%u", &startLBA);
-			printf("> 총 read할 sector 개수 입력 : ");
+			printf("> Total Write 'Sector_cnt' : ");
 			scanf("%u", &sector_cnt);
 
-			//read(startLBA, sector_cnt);
+			if (ftl_read(startLBA, sector_cnt, read_buffer) == FALSE) {
+				printf("ftl_read failed...\n");
+			}
+			/*else {
+
+			}*/
 		}
 		else if (cmd == 7)		// random Write / Read
 		{

@@ -1,7 +1,7 @@
-#pragma once
+ï»¿#pragma once
 #include "config.h"
 
 #define MAX_PATH_SIZE	100
 
-// ÇÑ ÆäÀÌÁö ÀĞ±â
-BOOL read_page(UINT32 start_lba, UINT32 sector_cnt, char* buf);
+// í•œ í˜ì´ì§€ ì½ê¸°
+size_t ftl_read(UINT32 start_lba, UINT32 sector_cnt, char* buf);

@@ -1,13 +1,24 @@
-#include "read.h"
+ï»¿#include "read.h"
 #include "file_sys_util.h"
 #include "map_address.h"
 
-UINT64 find_sector(UINT32 target_lba, const char* page_buf) {
-	for (size_t off = 0; off + 8 <= PAGE_SIZE; off += 8) {
-		UINT32 lba;
-		memcpy(&lba, page_buf + off, 4);
+UINT64 find_sector(UINT32 target_lba, const char* page_buf, size_t size)
+{
+	const size_t sector_size = SECTOR_SIZE;
+	const size_t lba_offset = 4;
 
-		if (lba == target_lba) {
+	// sizeëŠ” í•­ìƒ 8ì˜ ë°°ìˆ˜ë¼ê³  ê°€ì •
+	size_t sector_cnt = size / sector_size;
+
+	for (size_t i = 0; i < sector_cnt; i++)
+	{
+		size_t off = i * sector_size;
+
+		UINT32 lba;
+		memcpy(&lba, page_buf + off + lba_offset, 4);
+
+		if (lba == target_lba)
+		{
 			UINT64 sector_data;
 			memcpy(&sector_data, page_buf + off, 8);
 			return sector_data;
@@ -17,37 +28,43 @@ UINT64 find_sector(UINT32 target_lba, const char* page_buf) {
 	return 0;
 }
 
-BOOL read_page(UINT32 start_lba, UINT32 sector_cnt, char* buf)
+
+
+
+size_t ftl_read(UINT32 start_lba, UINT32 sector_cnt, char* buf)
 {
-	// lba °ªÀ¸·Î pba¸¦ ¾òÀº ´ÙÀ½
-	// ÇØ´ç lba ºÎÅÍ sector_cnt ¸¸Å­ÀÇ sector data ÀÐ¾î¼­ buf¿¡ ´ã±â
+	// lba ê°’ìœ¼ë¡œ pbaë¥¼ ì–»ì€ ë‹¤ìŒ
+	// í•´ë‹¹ lba ë¶€í„° sector_cnt ë§Œí¼ì˜ sector data ì½ì–´ì„œ bufì— ë‹´ê¸°
 
 	char page_buf[PAGE_SIZE];
 	char path[MAX_PATH_SIZE];
+	size_t sector_data_num = 0;
 
 	UINT32 lba = start_lba;
-	char* cursor = buf;   // buf¿¡¼­ ÇöÀç ½á¾ß ÇÒ À§Ä¡¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+	char* cursor = buf;   // bufì—ì„œ í˜„ìž¬ ì¨ì•¼ í•  ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
 
 	for (UINT32 cnt = 0; cnt < sector_cnt; cnt++) {
 		
 		UINT64 sector_data;
 
-		// PBA ¹Þ¾Æ¿À±â
+		// PBA ë°›ì•„ì˜¤ê¸°
 		UINT16 pba = get_pba(g_Map, lba);
 
-		// PBA¿¡ ÇØ´çÇÏ´Â Path ¹Þ¾Æ¿À±â
+		// PBAì— í•´ë‹¹í•˜ëŠ” Path ë°›ì•„ì˜¤ê¸°
 		get_page_path(pba, path);
 
-		// ÇØ´ç Path ÆÄÀÏ ÀÐ±â
-		if (!read_file(path, page_buf)) {
+		// í•´ë‹¹ Path íŒŒì¼ ì½ê¸°
+		printf("%s %d\n", path, cnt);
+		size_t page_size = read_file(path, page_buf);
+		if (page_size == FALSE) {
 #ifdef DEBUG
 			printf("File Read Failed...\n");
 #endif
 			return FALSE;
 		}
 
-		// ÀÐÀº Page¿¡¼­ LBA¿¡ ÇØ´çÇÏ´Â sector Ã£±â
-		sector_data = find_sector(lba, page_buf);
+		// ì½ì€ Pageì—ì„œ LBAì— í•´ë‹¹í•˜ëŠ” sector ì°¾ê¸°
+		sector_data = find_sector(lba, page_buf, page_size);
 		if (sector_data == 0) {
 #ifdef DEBUG
 			printf("Find Sector Failed...\n");
@@ -56,12 +73,13 @@ BOOL read_page(UINT32 start_lba, UINT32 sector_cnt, char* buf)
 			return FALSE;
 		}
 
-		// buf¿¡ 8¹ÙÀÌÆ® sector data ÀÌ¾î¼­ ¾²±â
+		// bufì— 8ë°”ì´íŠ¸ sector data ì´ì–´ì„œ ì“°ê¸°
 		memcpy(cursor, &sector_data, sizeof(UINT64));
-		cursor += sizeof(UINT64);   // ´ÙÀ½ À§Ä¡·Î ÀÌµ¿
+		cursor += sizeof(UINT64);   // ë‹¤ìŒ ìœ„ì¹˜ë¡œ ì´ë™
 
+		sector_data_num++;
 		lba++;
 	}
 
-	return TRUE;
+	return sector_data_num;	// sector data ê°œìˆ˜ ë°˜í™˜
 }

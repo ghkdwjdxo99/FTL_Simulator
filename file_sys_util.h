@@ -21,7 +21,7 @@ BOOL make_bin_file(const char* path);
 BOOL write_file(const char* path, const void* data_buf, UINT32 size);
 
 // read
-BOOL read_file(const char* path, void* buf);
+size_t read_file(const char* path, void* buf);
 
 
 /* ======== Application Function ======== */
