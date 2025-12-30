@@ -104,3 +104,17 @@ void range_view_map(const MAP_ADDR* map_addr_base, UINT32 start_lba, UINT32 sect
 	if ((printed % col_cnt) != 0)
 		printf("\n");
 }
+
+
+void show_cursor(BLOCK_CURSOR* target_cursor)
+{
+	printf("blk  %-9s\n", "nextPg(dec/hex)");
+
+	for (UINT8 block = 0; block < BLOCK_NUM; block++)
+	{
+		BLOCK_CURSOR* target_cursor_block = target_cursor + block;
+
+
+		printf("%-3u  %7u (0x%02X)\n",(unsigned)block, (unsigned)(*target_cursor_block), (unsigned)(*target_cursor_block));
+	}
+}

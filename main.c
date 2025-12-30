@@ -76,10 +76,10 @@ int main(void)
 				printf("RESET SUCCESS (metadata.bin , map.bin, cursor.bin)\n");
 			}
 		}
-		else if (cmd == 2)
+		else if (cmd == 2)		// meta
 		{
-			UINT8 option = 0;
-			printf("> Select option ( 0 : total bank, 1 : one bank ) : "), scanf("%u", &option);
+			UINT8 option;
+			printf("> Select option ( 0 : all bank, 1 : one bank ) : "), scanf("%u", &option);
 			flush_stdin_line();
 
 			if (option == 0)		// 전체 bank 출력
@@ -92,13 +92,16 @@ int main(void)
 					show_metadata(target_meta);
 					printf("===================================================================\n");
 
-					wait_enter();
+					printf("Press any key if you want to continue...\n");
+					printf("Press 'q' to exit.\n");
+					if (wait_key_continue() == 0)
+						continue; // 'q'
 				}
 
 			}
 			else if (option == 1)		//  특정 bank만 출력
 			{
-				UINT8 bank = 0;
+				UINT8 bank;
 				printf("> Input BANK NUMBER (0 ~ 3) : "), scanf("%u", &bank);							
 				flush_stdin_line();
 
@@ -109,7 +112,7 @@ int main(void)
 				printf("===================================================================\n");
 			}
 		}
-		else if (cmd == 3)
+		else if (cmd == 3)		// map 
 		{
 			//squencial_view_map(g_Map);
 			UINT32 start_lba;
@@ -120,9 +123,41 @@ int main(void)
 			scanf("%u", &sector_cnt);
 			range_view_map(g_Map, start_lba, sector_cnt);
 		}
-		else if (cmd == 4)
+		else if (cmd == 4)		// cursor
 		{
+			UINT8 option = 0;
+			printf("> Select option ( 0 : all bank, 1 : selected one bank ) : "), scanf("%u", &option);
+			flush_stdin_line();
 
+			if (option == 0)		// 전체 bank 출력
+			{
+				for (UINT8 bank = 0; bank < BANK_NUM; bank++)
+				{
+					BLOCK_CURSOR* target_cursor = g_Cursor + bank * BLOCK_NUM;
+					printf("\n===================================================================\n");
+					printf("[CURSOR Summary] bank = %u \n", bank);
+					show_cursor(target_cursor);
+					printf("===================================================================\n");
+
+					printf("Press any key if you want to continue...\n");
+					printf("Press 'q' to exit.\n");
+					if (wait_key_continue() == 0)
+						continue; // 'q'
+				}
+			}
+
+			else if (option == 1)		//  특정 bank 만 출력
+			{
+				UINT8 bank;
+				printf("> Input BANK NUMBER (0 ~ 3) : "), scanf("%u", &bank);
+				flush_stdin_line();
+
+				BLOCK_CURSOR* target_cursor = g_Cursor + bank * BLOCK_NUM;
+				printf("\n===================================================================\n");
+				printf("[CURSOR Summary] bank = %u\n", bank);
+				show_cursor(target_cursor);
+				printf("===================================================================\n");
+			}
 		}
 		else if (cmd == 5)		// seq Write
 		{
