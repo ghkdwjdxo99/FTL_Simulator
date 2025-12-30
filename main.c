@@ -148,9 +148,9 @@ int main(void)
 			if (ftl_read(start_lba, sector_cnt, read_buffer) == FALSE) {
 				printf("ftl_read failed...\n");
 			}
-			/*else {
-
-			}*/
+			else {
+				view_read_buf(read_buffer, sector_cnt);
+			}
 		}
 		else if (cmd == 7)		// random Write / Read
 		{

@@ -1,19 +1,5 @@
 #include "viewer.h"
 
-/* 사용자 입력 관련 함수 */
-int get_any_key() {
-	return _getch();
-}
-
-int wait_key_continue() {
-	int ch = get_any_key();
-
-	if (ch == 'q' || ch == 'Q')
-		return 0;
-	return 1;
-}
-
-/* 출력 헬퍼 함수 */
 
 
 /*
@@ -103,4 +89,31 @@ void range_view_map(const MAP_ADDR* map_addr_base, UINT32 start_lba, UINT32 sect
 	// 마지막 줄 개행 보정
 	if ((printed % col_cnt) != 0)
 		printf("\n");
+}
+
+// metadata 보여주기
+void show_metadata(BLOCK_META* target_meta)
+{
+	printf("blk  %-9s  %7s %7s  %s\n",
+		"type", "freePg", "usedPg", "validCnt(dec/hex)");
+
+	for (UINT8 block = 0; block < BLOCK_NUM; block++)
+	{
+		BLOCK_META* target_meta_block = target_meta + block;
+
+		UINT32 block_type = (target_meta_block->BlockState) & 0xF0000000;
+		const char* type_str = block_type_to_str(block_type);
+
+		UINT8 freePg = PAGE_NUM;
+		UINT16 valid_cnt = count_valid_from_bitmap(target_meta_block, &freePg);
+		UINT8 usedPg = PAGE_NUM - freePg;
+
+		printf("%-3u  %-9s  %7u %7u  %7u (0x%04X)\n",
+			(unsigned)block,
+			type_str,
+			(unsigned)freePg,
+			(unsigned)usedPg,
+			(unsigned)valid_cnt,
+			(unsigned)valid_cnt);
+	}
 }

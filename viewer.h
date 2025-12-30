@@ -1,17 +1,14 @@
 #pragma once
-#include <stdio.h>
-#include <conio.h>
 
 #include "config.h"
-#include "map_address.h"
 #include "file_sys_util.h"
+#include "util.h"
+#include "map_address.h"
+#include "metadata.h"
 
-/* 사용자 입력 관련 함수 */
-int get_any_key();
-int wait_key_continue();
 
-/* 출력 헬퍼 함수 */
-
+// metadata 보여주기
+void show_metadata(BLOCK_META* target_meta);
 
 // map 출력 함수
 //void squencial_view_map(MAP_ADDR* map_addr_base);
