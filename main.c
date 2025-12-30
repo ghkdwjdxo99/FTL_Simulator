@@ -6,6 +6,7 @@
 #include "write.h"
 #include "init.h"
 #include "read.h"
+#include "viewer.h"
 
 // 메모리 정의
 static UINT8 G_MEM[1024 * 1024 * 18];
@@ -110,7 +111,14 @@ int main(void)
 		}
 		else if (cmd == 3)
 		{
-
+			//squencial_view_map(g_Map);
+			UINT32 start_lba;
+			UINT32 sector_cnt;
+			printf("> 'Start LBA' (Max 8,388,608) : ");
+			scanf("%u", &start_lba);
+			printf("> Total print 'Sector_cnt' : ");
+			scanf("%u", &sector_cnt);
+			range_view_map(g_Map, start_lba, sector_cnt);
 		}
 		else if (cmd == 4)
 		{
@@ -118,26 +126,26 @@ int main(void)
 		}
 		else if (cmd == 5)		// seq Write
 		{
-			UINT32 startLBA;
+			UINT32 start_lba;
 			UINT32 sector_cnt;
 			printf("> 'Start LBA' (Max 8,388,608) : ");		// 몇번 LBA부터 write
-			scanf("%u", &startLBA);
+			scanf("%u", &start_lba);
 			printf("> Total Write 'Sector_cnt' : ");
 			scanf("%u", &sector_cnt);
 
-			ftl_write(startLBA, sector_cnt);
+			ftl_write(start_lba, sector_cnt);
 			printf("===================================================================\n");
 		}
 		else if (cmd == 6)		// seq Read
 		{
-			UINT32 startLBA;
+			UINT32 start_lba;
 			UINT32 sector_cnt;
 			printf("> 'Start LBA' (Max 8,388,608) : ");	// 몇번 LBA부터 Read
-			scanf("%u", &startLBA);
+			scanf("%u", &start_lba);
 			printf("> Total Write 'Sector_cnt' : ");
 			scanf("%u", &sector_cnt);
 
-			if (ftl_read(startLBA, sector_cnt, read_buffer) == FALSE) {
+			if (ftl_read(start_lba, sector_cnt, read_buffer) == FALSE) {
 				printf("ftl_read failed...\n");
 			}
 			/*else {

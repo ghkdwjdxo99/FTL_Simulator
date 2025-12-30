@@ -9,6 +9,8 @@ BOOL init_map_addr_zero(MAP_ADDR* map_addr_base) {
 	return TRUE;
 }
 
+
+
 // PBA·Î Map º¯°æ
 void set_pba(MAP_ADDR* map_addr_base, UINT32 target_lba, MAP_ADDR target_pba) {
 	*(map_addr_base + target_lba) = target_pba;
