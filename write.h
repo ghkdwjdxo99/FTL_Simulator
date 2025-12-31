@@ -39,6 +39,6 @@ void get_data_from_page(UINT16 pba, char* page_buf);
 // 8바이트 sector data에서 lba만 가져오는 함수
 UINT32 get_lba_from_sector_data(UINT8* buf);
 
-void modify_data_from_buf(UINT8* page_buf, UINT16 target_lba, UINT8* new_page_buf);
+void modify_data_from_buf(UINT8* page_buf, UINT16 target_lba, UINT8* new_page_buf, UINT16* new_PBA);
 
 
