@@ -18,3 +18,6 @@ void range_view_map(const MAP_ADDR* map_addr_base, UINT32 start_lba, UINT32 sect
 
 // cursor 출력 함수
 void show_cursor(BLOCK_CURSOR* target_cursor);
+
+// random w/r log 출력 함수
+void log_rand_wr(BOOL wr, UINT32 num, UINT32 start_lba, UINT32 end_lba, UINT16 pba, BOOL read_result);

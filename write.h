@@ -29,3 +29,5 @@ BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page);
 UINT16 find_enable_pba(MAP_ADDR* map_addr_base, UINT32 target_lba);
 
 BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt);
+
+BOOL ftl_random_write(UINT32 startLBA, UINT32 sector_cnt, UINT32 count);
