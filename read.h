@@ -7,7 +7,7 @@
 void view_read_buf(char* buf, UINT32 sector_cnt);
 
 // read 버퍼에 있는 값을 검증하는 함수
-BOOL verify_page_buf(char* buf, UINT32 sector_cnt);
+BOOL verify_page_buf(char* buf, UINT32 sector_cnt, UINT16 pba);
 
 UINT64 find_sector(UINT32 target_lba, const char* page_buf, size_t size);
 

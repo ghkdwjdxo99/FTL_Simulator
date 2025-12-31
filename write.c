@@ -227,10 +227,14 @@ BOOL ftl_random_write(UINT32 startLBA, UINT32 sector_cnt, UINT32 count)
 		UINT32 targetLBA = startLBA + sector_offset;
 
 		/* ========== (0) sector 단위로 write할 수 있는 위치 찾기 ========== */
+		UINT16 origin_PBA = get_pba(g_Map, targetLBA);
 		UINT16 new_PBA = find_enable_pba(g_Map, targetLBA);
 
 		/* ========== (1) map 업데이트 ========== */
 		set_pba(g_Map, targetLBA, new_PBA);
+
+		/* ========== (1-1) 이전 pba를 기준으로 bitmap을 0으로 업데이트 ========== */
+		update_validBitmap_zero(g_Meta, origin_PBA);
 
 		//UINT8 bank	= get_bank(g_Map, targetLBA);
 		//UINT8 block = get_block(g_Map, targetLBA);
@@ -253,11 +257,12 @@ BOOL ftl_random_write(UINT32 startLBA, UINT32 sector_cnt, UINT32 count)
 			}
 			else    // 두번째 page 이상부터
 			{
-				firstLBA_in_page = set_page * MAX_SECTORS_PER_PAGE;
+				firstLBA_in_page = startLBA + set_page * MAX_SECTORS_PER_PAGE;
 				sectors_in_page = (sector_offset == sector_cnt - 1) ? (sector_cnt - (set_page * MAX_SECTORS_PER_PAGE)) : MAX_SECTORS_PER_PAGE;
 
 				set_page++;
 			}
+
 			UINT32 end_lba = (firstLBA_in_page + sectors_in_page) - 1;
 			log_rand_wr(WRITE, count, firstLBA_in_page, end_lba, new_PBA, NONE);
 

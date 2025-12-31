@@ -239,9 +239,11 @@ int main(void)
 					if(ftl_read(start_lba_loop, sector_cnt_loop, read_buffer) == FALSE)
 						read_verify_result = FALSE;
 					else {
-						read_verify_result = verify_page_buf(read_buffer, sector_cnt_loop);
+						UINT32 new_PBA = get_pba(g_Map, rand_start_lba);
+						read_verify_result = verify_page_buf(read_buffer, sector_cnt_loop, new_PBA);
 					}
 				}
+
 				UINT32 new_PBA = get_pba(g_Map, rand_start_lba);
 				log_rand_wr(READ, wr_count, rand_start_lba, end_lba, new_PBA, read_verify_result);
 
