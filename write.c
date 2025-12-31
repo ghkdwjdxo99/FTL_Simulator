@@ -323,17 +323,24 @@ UINT32 get_lba_from_sector_data(UINT8* buf)
 // 해당 page기준으로 수정하지 않은 sector들을 찾아서 다시 write할 PBA를 찾는 함수
 void modify_data_from_buf(UINT8* page_buf, UINT16 target_lba, UINT8* new_page_buf)
 {
-
+	UINT8* p = new_page_buf;
+	
 	for (UINT16 s = 0; s < MAX_SECTORS_PER_PAGE; s++)
 	{
 		UINT16 idx = DATA_WRITE_SIZE * s;
-		UINT32 cur_lba = get_lba_from_sector_data(page_buf + idx);
+		UINT8* sector_ptr = page_buf + idx;
+
+		UINT32 cur_lba = get_lba_from_sector_data(sector_ptr);
+		
 
 		if (cur_lba != target_lba)
 		{
 			// 해야될 것 :
 			// 8바이트 데이터 뽑아오기 구현 (정태)
 			// 뽑아온거 new_buf에 넣기 구현 (정태)
+			memcpy(p, sector_ptr, DATA_WRITE_SIZE);
+			p += DATA_WRITE_SIZE;
+
 
 			UINT16 origin_PBA = get_pba(g_Map, cur_lba);
 			UINT16 new_PBA = find_enable_pba(g_Map, cur_lba);
