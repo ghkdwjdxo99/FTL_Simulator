@@ -3,6 +3,7 @@
 #include "map_address.h"
 #include "util.h"
 #include "viewer.h"
+#include "write.h"
 
 
 // read 버퍼에 있는 값을 출력하는 함수
