@@ -145,3 +145,26 @@ void show_cursor(BLOCK_CURSOR* target_cursor)
 		printf("%-3u  %7u (0x%02X)\n",(unsigned)block, (unsigned)(*target_cursor_block), (unsigned)(*target_cursor_block));
 	}
 }
+
+// random w/r log 출력 함수
+void log_rand_wr(BOOL wr, UINT32 num, UINT32 start_lba, UINT32 end_lba, UINT16 pba, BOOL read_result) {
+	// wr == 0 : write
+	// wr == 1 : read
+	// num	wr	start_lba	end_lba		pba		read_result (read의 경우만)
+	UINT32 bank, block, page;
+	pba_to_bank_block_page(pba, &bank, &block, &page);
+
+	printf("%3u ", num);
+	printf("%s ", (wr == 0) ? "wr" : "rd");
+	printf("%7u ", start_lba);
+	printf("%7u ", end_lba);
+	printf("0x%04x (%u %3u %3u) ", pba, bank, block, page);
+
+	if (wr == 0) {	// write
+		
+	}
+	else if (wr == 1) {	// read
+		printf("%s", (read_result == TRUE) ? "Pass" : "Fail");
+	}
+	printf("\n");
+}

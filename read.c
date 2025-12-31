@@ -2,6 +2,7 @@
 #include "file_sys_util.h"
 #include "map_address.h"
 #include "util.h"
+#include "viewer.h"
 
 
 // read 버퍼에 있는 값을 출력하는 함수
@@ -36,6 +37,21 @@ void view_read_buf(char* buf, UINT32 sector_cnt) {
 				return;
 		}
 	}
+}
+
+// 1 page를 읽은 read 버퍼에 있는 값을 검증하는 함수
+BOOL verify_page_buf(char* buf, UINT32 sector_cnt, UINT16 pba) {
+	for (UINT32 sector = 0; sector < sector_cnt; sector++) {
+		const char* p = buf + ((size_t)sector * 8);
+
+		UINT32 lba;
+
+		memcpy(&lba, p + 4, 4);
+
+		if (pba != get_pba(g_Map, lba))
+			return FALSE;
+	}
+	return TRUE;
 }
 
 UINT64 find_sector(UINT32 target_lba, const char* page_buf, size_t size)

@@ -3,6 +3,7 @@
 #include "map_address.h"
 #include "cursor.h"
 #include "file_sys_util.h"
+#include "viewer.h"
 #include <time.h>
 
 // 8 Byte 데이터 만들어서 data_buf에 저장
@@ -206,6 +207,66 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 			set_cursor_next_page(target_cursor);
 
 			/* ========== (2-2) metadata 업데이트 ========== */	
+			BLOCK_META* target_metadata = g_Meta + block_offset;
+			update_metadata(target_metadata, firstLBA_in_page, sectors_in_page);
+
+			/* ========== (2-3) Page.bin에 write ========== */
+			write_single_page(firstLBA_in_page, sectors_in_page);
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL ftl_random_write(UINT32 startLBA, UINT32 sector_cnt, UINT32 count)
+{
+	//UINT8 page_cnt = (sector_cnt + MAX_SECTOR_PER_PAGE - 1) / MAX_SECTOR_PER_PAGE;		// 써야하는 page 개수
+	UINT32 set_page = 0;						// 현재 write 완료한 page 개수
+	for (UINT32 sector_offset = 0; sector_offset < sector_cnt; sector_offset++)
+	{
+		UINT32 targetLBA = startLBA + sector_offset;
+
+		/* ========== (0) sector 단위로 write할 수 있는 위치 찾기 ========== */
+		UINT16 new_PBA = find_enable_pba(g_Map, targetLBA);
+
+		/* ========== (1) map 업데이트 ========== */
+		set_pba(g_Map, targetLBA, new_PBA);
+
+		//UINT8 bank	= get_bank(g_Map, targetLBA);
+		//UINT8 block = get_block(g_Map, targetLBA);
+		//UINT8 page	= get_page(g_Map, targetLBA);
+
+		/* ========== (2) cursor 및 metadata 업데이트 -> "한 페이지 단위" ========== */
+		// sector_offset이 마지막 sector 일 때  : sector_offset = sector_cnt-1
+		// sector_offfset + 1이 128배수일 때 : (sector_offset + 1) % 128 == 0
+		if (sector_offset == (sector_cnt - 1) || (sector_offset + 1) % MAX_SECTORS_PER_PAGE == 0)
+		{
+			/* ========== (2-0) 지금 쓰려는 page 기준 : 첫번째 LBA와 sector의 개수 구하기 ========== */
+			UINT32 firstLBA_in_page = 0;				// 현재 페이지 1개에 들어가는 첫번째 LBA
+			UINT32 sectors_in_page = 0;					// 현재 페이지 1개에 들어가는 sector의 개수
+			if (set_page == 0)		// 첫번째 page를 쓸 때
+			{
+				firstLBA_in_page = startLBA;
+				sectors_in_page = (sector_offset == sector_cnt - 1) ? sector_cnt : MAX_SECTORS_PER_PAGE;
+
+				set_page++;
+			}
+			else    // 두번째 page 이상부터
+			{
+				firstLBA_in_page = set_page * MAX_SECTORS_PER_PAGE;
+				sectors_in_page = (sector_offset == sector_cnt - 1) ? (sector_cnt - (set_page * MAX_SECTORS_PER_PAGE)) : MAX_SECTORS_PER_PAGE;
+
+				set_page++;
+			}
+			UINT32 end_lba = (firstLBA_in_page + sectors_in_page) - 1;
+			log_rand_wr(WRITE, count, firstLBA_in_page, end_lba, new_PBA, NONE);
+
+			/* ========== (2-1) cursor 업데이트 ========== */
+			UINT32 block_offset = get_block_offset(g_Map, targetLBA);
+			BLOCK_CURSOR* target_cursor = g_Cursor + block_offset;
+			set_cursor_next_page(target_cursor);
+
+			/* ========== (2-2) metadata 업데이트 ========== */
 			BLOCK_META* target_metadata = g_Meta + block_offset;
 			update_metadata(target_metadata, firstLBA_in_page, sectors_in_page);
 
