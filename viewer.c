@@ -110,8 +110,8 @@ static const char* block_type_to_str(UINT32 block_type)
 // metadata 보여주기
 void show_metadata(BLOCK_META* target_meta)
 {
-	printf("blk  %-9s  %7s %7s  %s\n",
-		"type", "freePg", "usedPg", "validCnt(dec/hex)");
+	printf("blk  %-9s   %s\n",
+		"type", "validCnt(dec/hex)");
 
 	for (UINT8 block = 0; block < BLOCK_NUM; block++)
 	{
@@ -120,15 +120,13 @@ void show_metadata(BLOCK_META* target_meta)
 		UINT32 block_type = (target_meta_block->BlockState) & 0xF0000000;
 		const char* type_str = block_type_to_str(block_type);
 
-		UINT8 freePg = PAGE_NUM;
-		UINT16 valid_cnt = count_valid_from_bitmap(target_meta_block, &freePg);
-		UINT8 usedPg = PAGE_NUM - freePg;
+		//UINT8 freePg = PAGE_NUM;
+		UINT16 valid_cnt = count_valid_from_bitmap(target_meta_block);
+		//UINT8 usedPg = PAGE_NUM - freePg;
 
-		printf("%-3u  %-9s  %7u %7u  %7u (0x%04X)\n",
+		printf("%-3u  %-9s   %7u (0x%04X)\n",
 			(unsigned)block,
 			type_str,
-			(unsigned)freePg,
-			(unsigned)usedPg,
 			(unsigned)valid_cnt,
 			(unsigned)valid_cnt);
 	}
