@@ -21,7 +21,7 @@
 
 #define WRITE	0
 #define READ	1
-#define NONE	0xFF
+#define NONE	-1
 
 // 구조체 선언 및 type 정의
 #define MAX_VALID_PER_BLOCK 	(MAX_SECTORS_PER_PAGE * PAGE_NUM)		// 128 * 2000 = 16384개(bit)		: 한 block당 나올 수 있는 최대 valid 개수

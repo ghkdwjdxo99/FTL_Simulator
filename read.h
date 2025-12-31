@@ -4,7 +4,7 @@
 #define MAX_PATH_SIZE	100
 
 // read 버퍼에 있는 값을 출력하는 함수
-void view_read_buf(char* buf, UINT32 sector_cnt);
+void view_read_buf(char* buf, UINT32 start_lba, UINT32 sector_cnt);
 
 // read 버퍼에 있는 값을 검증하는 함수
 BOOL verify_page_buf(char* buf, UINT32 sector_cnt, UINT16 pba);

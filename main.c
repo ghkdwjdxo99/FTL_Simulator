@@ -190,7 +190,7 @@ int main(void)
 				printf("ftl_read failed...\n");
 			}
 			else {
-				view_read_buf(read_buffer, sector_cnt);
+				view_read_buf(read_buffer, start_lba, sector_cnt);
 			}
 		}
 		else if (cmd == 7)		// random Write / Read

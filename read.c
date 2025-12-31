@@ -6,8 +6,8 @@
 
 
 // read 버퍼에 있는 값을 출력하는 함수
-void view_read_buf(char* buf, UINT32 sector_cnt) {
-	const UINT32 col_cnt = 4;
+void view_read_buf(char* buf, UINT32 start_lba, UINT32 sector_cnt) {
+	const UINT32 col_cnt = 1;
 	const UINT32 row_cnt = col_cnt * 10;
 
 	UINT32 printed = 0;
@@ -21,7 +21,13 @@ void view_read_buf(char* buf, UINT32 sector_cnt) {
 		memcpy(&timestamp	, p + 0, 4);
 		memcpy(&lba			, p + 4, 4);
 
-		printf("TS:0x%08X LBA: %3u |", timestamp, lba);
+		if (lba == NONE && timestamp == NONE) {
+			UINT32 req_lba = start_lba + sector;
+			printf("LBA %3u did not write |", req_lba);
+		}
+		else {
+			printf("TS:0x%08X LBA: %3u |", timestamp, lba);
+		}
 
 		printed++;
 
@@ -99,6 +105,14 @@ size_t ftl_read(UINT32 start_lba, UINT32 sector_cnt, char* buf)
 		// PBA 받아오기
 		UINT16 pba = get_pba(g_Map, lba);
 
+		// 매핑이 없으면 (pba == 0) 해당 섹터 크기만큼 0으로 채움
+		if (pba == 0) {
+			memset(cursor, NONE, sizeof(UINT64));  // -1 패턴
+			cursor += sizeof(UINT64);
+			lba++;
+			sector_data_num++;
+			continue;
+		}
 		// PBA에 해당하는 Path 받아오기
 		get_page_path(pba, path);
 
