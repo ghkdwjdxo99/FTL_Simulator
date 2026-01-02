@@ -167,17 +167,31 @@ UINT16 find_enable_pba(MAP_ADDR* map_addr_base, UINT32 target_lba)
 	return new_pba;
 }
 
+#if 0
 BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 {
 	//UINT8 page_cnt = (sector_cnt + MAX_SECTOR_PER_PAGE - 1) / MAX_SECTOR_PER_PAGE;		// 써야하는 page 개수
 	UINT32 set_page = 0;						// 현재 write 완료한 page 개수
+	
+	UINT32 modify_sector_cnt = 0;
+	char modify_page_buf[PAGE_SIZE];
+
 	for (UINT32 sector_offset = 0; sector_offset < sector_cnt; sector_offset++)
 	{
 		UINT32 targetLBA = startLBA + sector_offset;
 
 		/* ========== (0) sector 단위로 write할 수 있는 위치 찾기 ========== */
 		UINT16 origin_PBA = get_pba(g_Map, targetLBA);
-		UINT16 new_PBA = find_enable_pba(g_Map, targetLBA);		
+
+		/* ========== (1-2) read_and_modify_1 ========== */
+// 기존에 쓰여져있던 page에서 modify할 data만 뽑아서 buf에 담고 그 data에 포함된 sector 개수를 반환
+		modify_sector_cnt = 0;
+
+		if (origin_PBA != 0)
+			modify_sector_cnt = read_and_modify_1(targetLBA, origin_PBA, modify_page_buf);
+
+
+		UINT16 new_PBA = find_enable_pba(g_Map, targetLBA);
 
 		/* ========== (1) map 업데이트 ========== */
 		set_pba(g_Map, targetLBA, new_PBA);
@@ -185,9 +199,8 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 		/* ========== (1-1) 이전 pba를 기준으로 bitmap을 0으로 업데이트 ========== */
 		update_validBitmap_zero(g_Meta, origin_PBA);
 
-		/* ========== (1-2) read_modify ========== */
-		read_and_modify(targetLBA, origin_PBA);
-	
+
+
 		//UINT8 bank	= get_bank(g_Map, targetLBA);
 		//UINT8 block = get_block(g_Map, targetLBA);
 		//UINT8 page	= get_page(g_Map, targetLBA);
@@ -197,6 +210,13 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 		// sector_offfset + 1이 128배수일 때 : (sector_offset + 1) % 128 == 0
 		if ( sector_offset == (sector_cnt - 1) || (sector_offset + 1) % MAX_SECTORS_PER_PAGE == 0 )
 		{
+			/* ========== (1-2) read_and_modify_2 ========== */
+			if (origin_PBA != 0)
+			{
+				read_and_modify_2(g_Map, targetLBA, modify_sector_cnt, modify_page_buf);
+			}
+				
+
 			/* ========== (2-0) 지금 쓰려는 page 기준 : 첫번째 LBA와 sector의 개수 구하기 ========== */
 			UINT32 firstLBA_in_page = 0;				// 현재 페이지 1개에 들어가는 첫번째 LBA
 			UINT32 sectors_in_page = 0;					// 현재 페이지 1개에 들어가는 sector의 개수
@@ -231,6 +251,8 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 
 	return TRUE;
 }
+
+#endif
 
 BOOL ftl_random_write(UINT32 startLBA, UINT32 sector_cnt, UINT32 count)
 {
@@ -301,7 +323,7 @@ BOOL ftl_random_write(UINT32 startLBA, UINT32 sector_cnt, UINT32 count)
 
 
 // pba에 있는 데이터를 buf로 가져오는 함수
-void get_data_from_page(UINT16 pba, char* page_buf)
+size_t get_data_from_page(UINT16 pba, char* page_buf)
 {
 	char path[16];
 
@@ -316,6 +338,7 @@ void get_data_from_page(UINT16 pba, char* page_buf)
 #endif
 		return FALSE;
 	}
+	return page_size;
 }
 
 // 8바이트 sector data에서 lba만 가져오는 함수
@@ -328,21 +351,34 @@ UINT32 get_lba_from_sector_data(UINT8* buf)
 	return cur_lba;
 }
 
-// 해당 page기준으로 수정하지 않은 sector들을 찾아서 new_page_buf에 넣어주고, pba업데이트/map업데이트/bitmap_zero 업데이트
-UINT32 modify_data_from_buf(UINT8* page_buf, UINT16 target_lba, UINT8* new_page_buf, UINT16* new_PBA)
+#if 0
+// page_buf에서 수정하지 않은 sector들을 찾아서 new_page_buf에 넣어주고, pba업데이트/map업데이트/bitmap_zero 업데이트
+UINT32 modify_data_from_buf(UINT8* page_buf, size_t page_buf_size, UINT16 target_lba, UINT8* new_page_buf, UINT16* new_PBA)
 {
+	
 	UINT8* p = new_page_buf;
 	
-	UINT32 sector_cnt = 0;		// new_page_buf에 넣어준 sector의 개수
-	for (UINT16 s = 0; s < MAX_SECTORS_PER_PAGE; s++)
+	UINT32 new_sector_cnt = 0;		// new_page_buf에 넣어준 sector의 개수
+	for (UINT16 s = 0; s < page_buf_size/8; s++)
 	{
 		UINT16 idx = DATA_WRITE_SIZE * s;
 		UINT8* sector_ptr = page_buf + idx;
 
 		UINT32 cur_lba = get_lba_from_sector_data(sector_ptr);
-		
+		printf("[DBG] cur lba = %d\n", cur_lba);
 
-		if (cur_lba != target_lba)
+		// target lba -> 새로 바뀌는 LBA
+		// if cur_lba == target lba -> 걔네를 새로 write를 해줘야 하는 애들인거고
+		// if cur_lba != target lba -> memcpy로 new buffer에 넣고, 그 new buffer를 
+		if (cur_lba == target_lba)
+		{
+			UINT16 origin_PBA = get_pba(g_Map, cur_lba);
+			*new_PBA = find_enable_pba(g_Map, cur_lba);
+			set_pba(g_Map, cur_lba, *new_PBA);
+			update_validBitmap_zero(g_Meta, origin_PBA);
+
+		}
+		else if (cur_lba != target_lba)
 		{
 			// 해야될 것 :
 			// 8바이트 데이터 뽑아오기 구현 (정태)
@@ -350,33 +386,38 @@ UINT32 modify_data_from_buf(UINT8* page_buf, UINT16 target_lba, UINT8* new_page_
 			memcpy(p, sector_ptr, DATA_WRITE_SIZE);
 			p += DATA_WRITE_SIZE;
 
-			UINT16 origin_PBA = get_pba(g_Map, cur_lba);
-			*new_PBA = find_enable_pba(g_Map, cur_lba);
-			set_pba(g_Map, cur_lba, *new_PBA);
-			update_validBitmap_zero(g_Meta, origin_PBA);
-
-			sector_cnt++;
+			new_sector_cnt++;
 		}
 	}
 
 	// new_buf에 넣을 때 cnt++ 해서 총 넣은 sector수를 return
-	return sector_cnt;
+	return new_sector_cnt;
 }
 
-BOOL read_and_modify(UINT16 target_lba, UINT16 origin_pba)		// target_lba : overwrite하는 lba
+UINT32 read_and_modify_1(UINT16 target_lba, UINT16 origin_pba, char* new_page_buf)		// target_lba : overwrite하는 lba
 {
 
-	/* ========== (1) 기존 PBA의 데이터를 읽어서 buf에 넣는 함수 ========== */
+	/* ========== (1) 기존 PBA의 데이터를 읽어서 page_buf에 넣는 함수 ========== */
 	char page_buf[PAGE_SIZE];
-	get_data_from_page(origin_pba, page_buf);
+	size_t page_buf_size;
+	page_buf_size = get_data_from_page(origin_pba, page_buf);
 	
 	/* buf에서 필요한 sector 만 뽑아서 */
 	// 해당 sector의 데이터를 뽑아서 다른 buf(new_page_buf)에 저장 -> 해야됨 (정태)
 	// pba업데이트, map 업데이트, bitmap_zero 업데이트 -> 완료
-	char new_page_buf[PAGE_SIZE];
 	UINT16 new_PBA = 0;
 
-	UINT32 new_sector_cnt = modify_data_from_buf(page_buf, target_lba, new_page_buf, &new_PBA);		// new_page_buf에 넣어준 sector 개수
+	// map 업데이트
+	UINT32 new_sector_cnt = modify_data_from_buf(page_buf, page_buf_size, target_lba, new_page_buf, &new_PBA);		// new_page_buf에 넣어준 sector 개수
+	
+	UINT8 new_start_LBA = get_lba_from_sector_data(new_page_buf);		// new_page_buf에 넣어준 첫번째 lba의 번호
+
+	return new_sector_cnt;
+}
+
+BOOL read_and_modify_2(MAP_ADDR* map_addr_base, UINT16 target_lba, UINT32 new_sector_cnt, char* new_page_buf)
+{
+	UINT16 new_PBA = get_pba(map_addr_base, target_lba);				// modify한 pba 주소
 	UINT8 new_start_LBA = get_lba_from_sector_data(new_page_buf);		// new_page_buf에 넣어준 첫번째 lba의 번호
 
 	/* ========== (7) 새로운 PBA기준 cursor 업데이트 ========== */
@@ -391,9 +432,10 @@ BOOL read_and_modify(UINT16 target_lba, UINT16 origin_pba)		// target_lba : over
 	BLOCK_META* target_metadata = g_Meta + block_offset;
 	update_metadata(target_metadata, new_start_LBA, new_sector_cnt);
 
-	
+
 	/* ========== (9) new_buf를 이용해서 file에 write ========== */
 	char page_path[16];
 	get_page_path_from_pba(new_PBA, &page_path);		// 현재 LBA에 해당하는 page의 path 가져오기
 	write_file(page_path, new_page_buf, new_sector_cnt);	// 해당 path에 data_buf에 있는 데이터를 쓰기
 }
+#endif
