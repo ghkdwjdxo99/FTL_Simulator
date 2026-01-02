@@ -28,7 +28,9 @@ BOOL write_single_page(UINT32 firstLBA, UINT32 sectors_in_page);
 
 UINT16 find_enable_pba(MAP_ADDR* map_addr_base, UINT32 target_lba);
 
+/*
 BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt);
+*/
 
 BOOL ftl_random_write(UINT32 startLBA, UINT32 sector_cnt, UINT32 count);
 
@@ -39,8 +41,10 @@ size_t get_data_from_page(UINT16 pba, char* page_buf);
 // 8바이트 sector data에서 lba만 가져오는 함수
 UINT32 get_lba_from_sector_data(UINT8* buf);
 
+/*
 UINT32 modify_data_from_buf(UINT8* page_buf, size_t page_buf_size, UINT16 target_lba, UINT8* new_page_buf, UINT16* new_PBA);
 
 // 기존에 쓰여져있던 page에서 modify할 data만 뽑아서 buf에 담고 그 data에 포함된 sector 개수를 반환
 UINT32 read_and_modify_1(UINT16 target_lba, UINT16 origin_pba, char* new_page_buf);
 BOOL read_and_modify_2(MAP_ADDR* map_addr_base, UINT16 target_lba, UINT32 new_sector_cnt, char* new_page_buf);
+*/
