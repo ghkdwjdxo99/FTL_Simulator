@@ -186,10 +186,8 @@ BOOL ftl_write(UINT32 startLBA, UINT32 sector_cnt)
 		update_validBitmap_zero(g_Meta, origin_PBA);
 
 		/* ========== (1-2) read_modify ========== */
-		read_modify();
+		read_and_modify(targetLBA, origin_PBA);
 	
-
-
 		//UINT8 bank	= get_bank(g_Map, targetLBA);
 		//UINT8 block = get_block(g_Map, targetLBA);
 		//UINT8 page	= get_page(g_Map, targetLBA);
@@ -330,11 +328,12 @@ UINT32 get_lba_from_sector_data(UINT8* buf)
 	return cur_lba;
 }
 
-// 해당 page기준으로 수정하지 않은 sector들을 찾아서 다시 write할 PBA를 찾는 함수
-void modify_data_from_buf(UINT8* page_buf, UINT16 target_lba, UINT8* new_page_buf, UINT16* new_PBA)
+// 해당 page기준으로 수정하지 않은 sector들을 찾아서 new_page_buf에 넣어주고, pba업데이트/map업데이트/bitmap_zero 업데이트
+UINT32 modify_data_from_buf(UINT8* page_buf, UINT16 target_lba, UINT8* new_page_buf, UINT16* new_PBA)
 {
 	UINT8* p = new_page_buf;
 	
+	UINT32 sector_cnt = 0;		// new_page_buf에 넣어준 sector의 개수
 	for (UINT16 s = 0; s < MAX_SECTORS_PER_PAGE; s++)
 	{
 		UINT16 idx = DATA_WRITE_SIZE * s;
@@ -350,7 +349,6 @@ void modify_data_from_buf(UINT8* page_buf, UINT16 target_lba, UINT8* new_page_bu
 			// 뽑아온거 new_buf에 넣기 구현 (정태)
 			memcpy(p, sector_ptr, DATA_WRITE_SIZE);
 			p += DATA_WRITE_SIZE;
-
 
 			UINT16 origin_PBA = get_pba(g_Map, cur_lba);
 			*new_PBA = find_enable_pba(g_Map, cur_lba);
@@ -377,11 +375,10 @@ BOOL read_and_modify(UINT16 target_lba, UINT16 origin_pba)		// target_lba : over
 	// pba업데이트, map 업데이트, bitmap_zero 업데이트 -> 완료
 	char new_page_buf[PAGE_SIZE];
 	UINT16 new_PBA = 0;
-	UINT8 new_start_LBA = 0;		// modify 함수에서 가져올지? 아니면 new_page_buf에서 꺼내올지?
-	UINT8 new_sector_cnt = 0;		// modify 함수에서 가져올지? 아니면 new_page_buf에서 꺼내올지?
 
-	modify_data_from_buf(page_buf, target_lba, new_page_buf, &new_PBA);
-	
+	UINT32 new_sector_cnt = modify_data_from_buf(page_buf, target_lba, new_page_buf, &new_PBA);		// new_page_buf에 넣어준 sector 개수
+	UINT8 new_start_LBA = get_lba_from_sector_data(new_page_buf);		// new_page_buf에 넣어준 첫번째 lba의 번호
+
 	/* ========== (7) 새로운 PBA기준 cursor 업데이트 ========== */
 	UINT8 bank = get_bank_from_pba(new_PBA);
 	UINT8 block = get_block_from_pba(new_PBA);
